@@ -1,0 +1,11 @@
+{
+  "name": "elemental-test",
+  "version": "0.0.1",
+  "repository": "https://github.com/ceymard/el-test",
+  "description": "some description",
+  "license": "MIT",
+  "devDependencies": {
+    "source-map-loader": "^0.1.5",
+    "webpack": "^1.12.2"
+  }
+}
