@@ -1,30 +1,91 @@
+
 window.assert = function (b) {
   if (!b) console.error(new Error('assert failed'));
 }
 
+import {o} from 'elt/observable';
 import {elt, Component} from 'elt/component';
-import {Bind} from 'elt/middleware';
+import {Bind, Click} from 'elt/middleware';
+
+class It extends Component {
+  props = ['obs', 'type'];
+
+  view(data) {
+    if (!data.obs)
+      data.obs = o(null);
+    data.type = data.type || 'text';
+
+    return <li>
+        <span class='title'>{data.type || 'text'}</span>
+        <code class='result'>{data.obs}</code>
+        <input type={data.type} $$={Bind(data.obs)}/>
+      </li>
+  }
+}
 
 class MyApp extends Component {
 
   initial_data = {
     txt: 'some text.',
-    txt2: 'other text...',
-    obj: {a: 1, b: 2}
+    pass: 'hunter2',
+    obj: {a: 1, b: 2},
+    // obs: o({a: 5, b: 6}),
+    val: 200,
+    bool: true,
+    radio: 'one',
+    search: '',
+    number: 4,
+    date: new Date, // not working.
+    month: new Date, // not working.
+    week: new Date, // not working.
+    time: new Date,
+    datetime: new Date, // not working.
+    datetime_local: new Date, // not working.
+    tel: '+33652738543',
+    email: 'admin@domain.com',
+    color: '#f45947'
   };
 
   props = ['txt'];
 
   view(data) {
-    console.dir(data.txt2);
     return <div>
-      <span class='pouet'>test ! {data.txt} {false} {new Date()}</span><br/>
-      <span>{data.obj} <input type='text' name='toto' value={data.txt2}/></span>
+      <h2>HTML5 Input Tests</h2>
+      <ul>
+        <It type='text' obs={data.txt}></It>
+        <It type='password' obs={data.pass}></It>
+        <It type='checkbox' obs={data.bool}></It>
+        <It type='search' obs={data.search}></It>
+        <It type='email' obs={data.email}></It>
+        <It type='number' obs={data.number}></It>
+        <It type='tel' obs={data.tel}></It>
+        <It type='radio' obs={data.radio}>
+          <label><input type='radio' value='one' $$={Bind(data.radio)}/>One</label>
+          <label><input type='radio' value='two' $$={Bind(data.radio)}/>Two</label>
+        </It>
+        <It type='color' obs={data.color}></It>
+        <It type='range' obs={data.val}></It>
+        <It type='date' obs={data.date}></It>
+        <It type='month' obs={data.month}></It>
+        <It type='week' obs={data.week}></It>
+        <It type='time' obs={data.time}></It>
+        <It type='datetime' obs={data.datetime}></It>
+        <It type='datetime-local' obs={data.datetime_local}></It>
+      </ul>
+
+      <h2>Some Random Listeners</h2>
+      <span class='pouet'>{false} {new Date()}</span> <button $$={Click(this.test.bind(this))}>Click me !</button><br/>
+      <span>{data.obj}</span><br/>
+      <span> {data.txt} !!!!</span><br/>
+      <span> {data.bool} !!!!</span><br/>
     </div>;
   }
+  // <span><input type='text' name='toto2' $$={Bind(data.obs.a)}/> {data.obs.a} !!!!</span><br/>
+
+  test() {
+    this.data.txt = 'was clicked';
+  }
+
 }
 
-document.body.appendChild(<MyApp txt='pouet !'/>.$node);
-// should append that node to the body.
-
-// Hello!
+<MyApp txt='pouet !'/>.mount(document.body);

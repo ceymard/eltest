@@ -54,6 +54,8 @@
 	
 	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	
+	var _eltObservable = __webpack_require__(2);
+	
 	var _eltComponent = __webpack_require__(1);
 	
 	var _eltMiddleware = __webpack_require__(3);
@@ -62,8 +64,46 @@
 	  if (!b) console.error(new Error('assert failed'));
 	};
 	
-	var MyApp = (function (_Component) {
-	  _inherits(MyApp, _Component);
+	var It = (function (_Component) {
+	  _inherits(It, _Component);
+	
+	  function It() {
+	    _classCallCheck(this, It);
+	
+	    _get(Object.getPrototypeOf(It.prototype), 'constructor', this).apply(this, arguments);
+	
+	    this.props = ['obs', 'type'];
+	  }
+	
+	  _createClass(It, [{
+	    key: 'view',
+	    value: function view(data) {
+	      if (!data.obs) data.obs = (0, _eltObservable.o)(null);
+	      data.type = data.type || 'text';
+	
+	      return (0, _eltComponent.elt)(
+	        'li',
+	        null,
+	        (0, _eltComponent.elt)(
+	          'span',
+	          { 'class': 'title' },
+	          data.type || 'text'
+	        ),
+	        (0, _eltComponent.elt)(
+	          'code',
+	          { 'class': 'result' },
+	          data.obs
+	        ),
+	        (0, _eltComponent.elt)('input', { type: data.type, $$: (0, _eltMiddleware.Bind)(data.obs) })
+	      );
+	    }
+	  }]);
+	
+	  return It;
+	})(_eltComponent.Component);
+	
+	var MyApp = (function (_Component2) {
+	  _inherits(MyApp, _Component2);
 	
 	  function MyApp() {
 	    _classCallCheck(this, MyApp);
@@ -72,8 +112,23 @@
 	
 	    this.initial_data = {
 	      txt: 'some text.',
-	      txt2: 'other text...',
-	      obj: { a: 1, b: 2 }
+	      pass: 'hunter2',
+	      obj: { a: 1, b: 2 },
+	      // obs: o({a: 5, b: 6}),
+	      val: 200,
+	      bool: true,
+	      radio: 'one',
+	      search: '',
+	      number: 4,
+	      date: new Date(), // not working.
+	      month: new Date(), // not working.
+	      week: new Date(), // not working.
+	      time: new Date(),
+	      datetime: new Date(), // not working.
+	      datetime_local: new Date(), // not working.
+	      tel: '+33652738543',
+	      email: 'admin@domain.com',
+	      color: '#f45947'
 	    };
 	    this.props = ['txt'];
 	  }
@@ -81,39 +136,106 @@
 	  _createClass(MyApp, [{
 	    key: 'view',
 	    value: function view(data) {
-	      console.dir(data.txt2);
 	      return (0, _eltComponent.elt)(
 	        'div',
 	        null,
 	        (0, _eltComponent.elt)(
+	          'h2',
+	          null,
+	          'HTML5 Input Tests'
+	        ),
+	        (0, _eltComponent.elt)(
+	          'ul',
+	          null,
+	          (0, _eltComponent.elt)(It, { type: 'text', obs: data.txt }),
+	          (0, _eltComponent.elt)(It, { type: 'password', obs: data.pass }),
+	          (0, _eltComponent.elt)(It, { type: 'checkbox', obs: data.bool }),
+	          (0, _eltComponent.elt)(It, { type: 'search', obs: data.search }),
+	          (0, _eltComponent.elt)(It, { type: 'email', obs: data.email }),
+	          (0, _eltComponent.elt)(It, { type: 'number', obs: data.number }),
+	          (0, _eltComponent.elt)(It, { type: 'tel', obs: data.tel }),
+	          (0, _eltComponent.elt)(
+	            It,
+	            { type: 'radio', obs: data.radio },
+	            (0, _eltComponent.elt)(
+	              'label',
+	              null,
+	              (0, _eltComponent.elt)('input', { type: 'radio', value: 'one', $$: (0, _eltMiddleware.Bind)(data.radio) }),
+	              'One'
+	            ),
+	            (0, _eltComponent.elt)(
+	              'label',
+	              null,
+	              (0, _eltComponent.elt)('input', { type: 'radio', value: 'two', $$: (0, _eltMiddleware.Bind)(data.radio) }),
+	              'Two'
+	            )
+	          ),
+	          (0, _eltComponent.elt)(It, { type: 'color', obs: data.color }),
+	          (0, _eltComponent.elt)(It, { type: 'range', obs: data.val }),
+	          (0, _eltComponent.elt)(It, { type: 'date', obs: data.date }),
+	          (0, _eltComponent.elt)(It, { type: 'month', obs: data.month }),
+	          (0, _eltComponent.elt)(It, { type: 'week', obs: data.week }),
+	          (0, _eltComponent.elt)(It, { type: 'time', obs: data.time }),
+	          (0, _eltComponent.elt)(It, { type: 'datetime', obs: data.datetime }),
+	          (0, _eltComponent.elt)(It, { type: 'datetime-local', obs: data.datetime_local })
+	        ),
+	        (0, _eltComponent.elt)(
+	          'h2',
+	          null,
+	          'Some Random Listeners'
+	        ),
+	        (0, _eltComponent.elt)(
 	          'span',
 	          { 'class': 'pouet' },
-	          'test ! ',
-	          data.txt,
-	          ' ',
 	          false,
 	          ' ',
 	          new Date()
+	        ),
+	        ' ',
+	        (0, _eltComponent.elt)(
+	          'button',
+	          { $$: (0, _eltMiddleware.Click)(this.test.bind(this)) },
+	          'Click me !'
 	        ),
 	        (0, _eltComponent.elt)('br', null),
 	        (0, _eltComponent.elt)(
 	          'span',
 	          null,
-	          data.obj,
+	          data.obj
+	        ),
+	        (0, _eltComponent.elt)('br', null),
+	        (0, _eltComponent.elt)(
+	          'span',
+	          null,
 	          ' ',
-	          (0, _eltComponent.elt)('input', { type: 'text', name: 'toto', value: data.txt2 })
-	        )
+	          data.txt,
+	          ' !!!!'
+	        ),
+	        (0, _eltComponent.elt)('br', null),
+	        (0, _eltComponent.elt)(
+	          'span',
+	          null,
+	          ' ',
+	          data.bool,
+	          ' !!!!'
+	        ),
+	        (0, _eltComponent.elt)('br', null)
 	      );
+	    }
+	
+	    // <span><input type='text' name='toto2' $$={Bind(data.obs.a)}/> {data.obs.a} !!!!</span><br/>
+	
+	  }, {
+	    key: 'test',
+	    value: function test() {
+	      this.data.txt = 'was clicked';
 	    }
 	  }]);
 	
 	  return MyApp;
 	})(_eltComponent.Component);
 	
-	document.body.appendChild((0, _eltComponent.elt)(MyApp, { txt: 'pouet !' }).$node);
-	// should append that node to the body.
-
-	// Hello!
+	(0, _eltComponent.elt)(MyApp, { txt: 'pouet !' }).mount(document.body);
 
 /***/ },
 /* 1 */
@@ -126,15 +248,11 @@
 	});
 	exports.elt = elt;
 	
-	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
-	
-	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 	
-	var _eltObservable = __webpack_require__(2);
-	
-	var p = _interopRequireWildcard(_eltObservable);
+	var _observable = __webpack_require__(2);
 	
 	var Component = (function () {
 	
@@ -143,11 +261,12 @@
 	  function Component() {
 	    var _this = this;
 	
-	    var attrs = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+	    var attrs = arguments[0] === undefined ? {} : arguments[0];
 	
 	    _classCallCheck(this, Component);
 	
 	    this.$node = null;
+	    this.$parentNode = null;
 	    this.$content = null;
 	    this.$parentComponent = null;
 	    this.$middleware = [];
@@ -176,15 +295,11 @@
 	    this.attrs = attrs;
 	  }
 	
-	  /**
-	   *
-	   */
-	
 	  Component.prototype.compile = function compile() {
-	    var additional_data = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+	    var additional_data = arguments[0] === undefined ? {} : arguments[0];
 	
 	    var data = Object.assign({}, this.initial_data, additional_data);
-	    this.data = new _eltObservable.ObservableObject(data);
+	    this.data = new _observable.ObservableObject(data);
 	
 	    var attrs = this.attrs;
 	
@@ -200,20 +315,34 @@
 	        _ref = _i.value;
 	      }
 	
-	      var _p = _ref;
+	      var p = _ref;
 	
-	      if (_p in attrs) {
-	        this.data[_p] = attrs[_p];
+	      if (p in attrs) {
+	        this.data[p] = attrs[p];
 	      }
 	    }
 	
-	    // FIXME make this.data an observable.
-	
-	    // hmm ?? should I call the view() here ?
-	    // NOTE $content should be set up somewhere.
 	    this.$view = this.view(this.data);
 	    this.$view.setParentComponent(this);
 	    this.$content = this.$node = this.$view.$node;
+	
+	    for (var _iterator2 = this.$middleware, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
+	      var _ref2;
+	
+	      if (_isArray2) {
+	        if (_i2 >= _iterator2.length) break;
+	        _ref2 = _iterator2[_i2++];
+	      } else {
+	        _i2 = _iterator2.next();
+	        if (_i2.done) break;
+	        _ref2 = _i2.value;
+	      }
+	
+	      var m = _ref2;
+	
+	      var res = new m(this);
+	      // should store them...
+	    }
 	  };
 	
 	  Component.prototype.view = function view() {
@@ -247,7 +376,7 @@
 	      // Simple text node.
 	      // Note
 	      content.appendChild(document.createTextNode(child.toString()));
-	    } else if (child instanceof _eltObservable.Observable) {
+	    } else if (child instanceof _observable.Observable) {
 	      (function () {
 	        // A text node that will be bound
 	        // child = new TextObservable(child);
@@ -272,14 +401,34 @@
 	    }
 	  };
 	
+	  Component.prototype.unmount = function unmount() {
+	    // remove from the parent DOM node if it is mounted
+	    // destroy the data, observables and such.
+	    if (!this.$parentNode) throw new Error('this node was not mounted');
+	    this.$parentNode.removeChild(this.$node);
+	    this.$parentNode = null;
+	    this.data.destroy();
+	  };
+	
+	  Component.prototype.mount = function mount(domnode) {
+	    if (this.$parentNode) {
+	      // maybe we could just let the node be mounted elsewhere ?
+	      throw new Error('already mounted !');
+	    }
+	    this.$parentNode = domnode;
+	    domnode.appendChild(this.$node);
+	  };
+	
 	  return Component;
 	})();
 	
 	exports.Component = Component;
 	
-	var TextObservable = (function (_Component) {
-	  _inherits(TextObservable, _Component);
+	/**
+	 *
+	 */
 	
+	var TextObservable = (function (_Component) {
 	  function TextObservable(obs) {
 	    _classCallCheck(this, TextObservable);
 	
@@ -291,19 +440,20 @@
 	    // obs.onchange((v) => this.$node.textContent);
 	  }
 	
-	  /**
-	   *
-	   */
+	  _inherits(TextObservable, _Component);
+	
 	  return TextObservable;
 	})(Component);
 	
 	exports.TextObservable = TextObservable;
 	
-	var HtmlComponent = (function (_Component2) {
-	  _inherits(HtmlComponent, _Component2);
+	/**
+	 *
+	 */
 	
+	var HtmlComponent = (function (_Component2) {
 	  function HtmlComponent(elt) {
-	    var attrs = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+	    var attrs = arguments[1] === undefined ? {} : arguments[1];
 	
 	    _classCallCheck(this, HtmlComponent);
 	
@@ -314,22 +464,7 @@
 	    this.elt = elt;
 	  }
 	
-	  /**
-	   *
-	   * NOTE During the element instanciation, it is expected
-	   * 		that the children are already instanciated components.
-	   *
-	   * @param  {Component|String} elt
-	   *         A Component or the name of the html element to create.
-	   * @param  {Object} attrs
-	   *         The attributes that go onto the node. They can hold Observable
-	   *         objects.
-	   * @param  {Component|Node|Any} ...children
-	   *         List of children to append to this component.
-	   * @return {Component}
-	   *         The resulting instanciated component, with a $node property
-	   *         ready to be inserted into the DOM.
-	   */
+	  _inherits(HtmlComponent, _Component2);
 	
 	  /**
 	   * Create the html node.
@@ -343,7 +478,7 @@
 	    var _loop = function (attribute_name) {
 	      var att = _this2.attrs[attribute_name];
 	
-	      if (att instanceof _eltObservable.Observable) {
+	      if (att instanceof _observable.Observable) {
 	        att.onchange(function (val) {
 	          if (typeof val === 'object') e.setAttribute(attribute_name, JSON.stringify(val));else e.setAttribute(attribute_name, val);
 	        });
@@ -365,6 +500,23 @@
 	
 	exports.HtmlComponent = HtmlComponent;
 	
+	/**
+	 *
+	 * NOTE During the element instanciation, it is expected
+	 * 		that the children are already instanciated components.
+	 *
+	 * @param  {Component|String} elt
+	 *         A Component or the name of the html element to create.
+	 * @param  {Object} attrs
+	 *         The attributes that go onto the node. They can hold Observable
+	 *         objects.
+	 * @param  {Component|Node|Any} ...children
+	 *         List of children to append to this component.
+	 * @return {Component}
+	 *         The resulting instanciated component, with a $node property
+	 *         ready to be inserted into the DOM.
+	 */
+	
 	function elt(elt, attrs) {
 	  for (var _len = arguments.length, children = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
 	    children[_key - 2] = arguments[_key];
@@ -384,19 +536,19 @@
 	  elt.compile();
 	
 	  // For each child, construct their node.
-	  for (var _iterator2 = children, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
-	    var _ref2;
+	  for (var _iterator3 = children, _isArray3 = Array.isArray(_iterator3), _i3 = 0, _iterator3 = _isArray3 ? _iterator3 : _iterator3[Symbol.iterator]();;) {
+	    var _ref3;
 	
-	    if (_isArray2) {
-	      if (_i2 >= _iterator2.length) break;
-	      _ref2 = _iterator2[_i2++];
+	    if (_isArray3) {
+	      if (_i3 >= _iterator3.length) break;
+	      _ref3 = _iterator3[_i3++];
 	    } else {
-	      _i2 = _iterator2.next();
-	      if (_i2.done) break;
-	      _ref2 = _i2.value;
+	      _i3 = _iterator3.next();
+	      if (_i3.done) break;
+	      _ref3 = _i3.value;
 	    }
 	
-	    var _c = _ref2;
+	    var _c = _ref3;
 	
 	    if (typeof _c === 'undefined') continue;
 	    elt.appendChild(_c);
@@ -425,6 +577,8 @@
 	exports.o = o;
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+	
+	var OBJ_PROTO = Object.getPrototypeOf({});
 	
 	var Observable = (function () {
 	  function Observable(value) {
@@ -593,15 +747,28 @@
 	      var _name = _ref4;
 	
 	      // For now, we don't check for recursion.
-	      this[_name] = new Observable(o[_name]);
+	      this.define(_name, o[_name]);
 	    }
 	  }
+	
+	  ObservableObject.prototype.define = function define(name, value) {
+	    var o = new Observable(value);
+	    Object.defineProperty(this, name, {
+	      enumerable: true,
+	      set: function set(value) {
+	        return o.set(value);
+	      },
+	      get: function get() {
+	        return o;
+	      }
+	    });
+	  };
 	
 	  /**
 	   * Bulk update of a datascope.
 	   */
 	
-	  ObservableObject.prototype.update = function update(o) {};
+	  ObservableObject.prototype.set = function set(o) {};
 	
 	  return ObservableObject;
 	})();
@@ -615,47 +782,57 @@
 	
 	  var l = args.length;
 	  var fn = args[args.length - 1];
-	  var deps = [];
 	
-	  for (var i = 0; i < l - 2; i++) {
-	    // compute the dependencies here.
+	  // Just creating an observable.
+	  if (l === 1) {
+	    var _a2 = args[0];
+	    if (_a2 && Object.getPrototypeOf(_a2) === OBJ_PROTO) return new ObservableObject(_a2);
+	    return new Observable(_a2);
 	  }
+	
+	  var deps = [];
+	  var res = new Observable();
+	
+	  var not_resolved = 0;
+	
+	  // We only get the observable objects.
+	  var observables = Array.prototype.slice.call(arguments, 0, arguments.length - 2);
+	  observables.forEach(function (o, i) {
+	    resolved = false;
+	    deps.push(null);
+	
+	    o.onchange(function (v) {
+	      if (!resolved) not_resolved -= 1;
+	      resolved = true;
+	      deps[i] = v;
+	      if (not_resolved === 0) res.set(fn.apply(null, deps));
+	    });
+	  });
+	
+	  return res;
 	}
 
 
 /***/ },
 /* 3 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
 	/**
 	 * Core middleware for el.
 	 */
 	
-	"use strict";
+	'use strict';
 	
-	Object.defineProperty(exports, "__esModule", {
+	Object.defineProperty(exports, '__esModule', {
 	  value: true
 	});
+	exports.Click = Click;
 	
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 	
 	var Attr = function Attr(obj, cpt) {};
 	
 	exports.Attr = Attr;
-	var If = function If(obs, cpt) {};
-	
-	exports.If = If;
-	/**
-	 * Decorate the component so that
-	 * @param  {[type]} 2        [description]
-	 * @param  {[type]} function Repeat(obs,   trackBy, repeater [description]
-	 * @return {[type]}          [description]
-	 */
-	var Repeat = function Repeat(obs, trackBy, repeater) {};
-	
-	exports.Repeat = Repeat;
 	var On = function On(evt_name, cbk) {
 	
 	  return function (component) {
@@ -683,38 +860,174 @@
 	
 	exports.Middleware = Middleware;
 	
-	var Bind = (function (_Middleware) {
-	  _inherits(Bind, _Middleware);
+	function Click(fn) {
 	
-	  function Bind() {
-	    _classCallCheck(this, Bind);
+	  return function (component) {
+	    component.$node.addEventListener('click', fn);
+	  };
+	}
 	
-	    _Middleware.apply(this, arguments);
+	exports.Bind = __webpack_require__(4);
+	exports.If = __webpack_require__(5);
+	exports.Repeat = __webpack_require__(6);
+
+
+/***/ },
+/* 4 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+	
+	var _middleware = __webpack_require__(3);
+	
+	function Bind(observable, opts) {
+	  if (!observable) return;
+	
+	  return function (component) {
+	    return new BindMiddleware(component, observable, opts);
+	  };
+	};
+	
+	var BindMiddleware = (function (_Middleware) {
+	  function BindMiddleware(component, observable, opts) {
+	    _classCallCheck(this, BindMiddleware);
+	
+	    _Middleware.call(this);
+	
+	    this.$component = null;
+	    this.$creator = Bind;
+	    this.$component = component;
+	    this.observable = observable;
+	    this.opts = opts;
+	
+	    // We're calling bind on a classic HTML node.
+	    var node = component.$node;
+	    var tag = node.tagName.toLowerCase();
+	
+	    if (tag === 'input') {
+	
+	      var cbk = function cbk(evt) {
+	        var val = node.value;
+	        // console.log(val);
+	        observable.set(val);
+	      };
+	      var type = node.type.toLowerCase() || 'text';
+	
+	      switch (type) {
+	        case 'color':
+	        case 'range':
+	          observable.onchange(function (val) {
+	            return node.value = val;
+	          });
+	          node.addEventListener('input', cbk);
+	          break;
+	        case 'radio':
+	          observable.onchange(function (val) {
+	            return node.checked = node.value === val;
+	          });
+	          node.addEventListener('change', cbk);
+	          break;
+	        case 'checkbox':
+	          observable.onchange(function (val) {
+	            return val ? node.checked = true : node.checked = false;
+	          });
+	          node.addEventListener('change', function () {
+	            return observable.set(node.checked);
+	          });
+	          break;
+	        case 'number':
+	        case 'text':
+	        case 'password':
+	        default:
+	          observable.onchange(function (val) {
+	            return node.value = val;
+	          });
+	          node.addEventListener('keyup', cbk);
+	      }
+	    } else if (tag === 'textarea') {} else if (tag === 'select') {}
 	  }
 	
-	  // export function Bind(observable, opts) {
-	  //
-	  //   return function (component) {
-	  //     // FIXME specify a bind interface.
-	  //     if (component.bind) {
-	  //
-	  //     } else {
-	  //       // We're calling bind on a classic HTML node.
-	  //       let node = component.$node;
-	  //
-	  //       if (node.tagName === 'input') {
-	  //
-	  //       } else if (node.tagName === 'textarea') {
-	  //
-	  //       }
-	  //     }
-	  //   };
-	  //
-	  // };
-	  return Bind;
-	})(Middleware);
+	  _inherits(BindMiddleware, _Middleware);
 	
-	exports.Bind = Bind;
+	  return BindMiddleware;
+	})(_middleware.Middleware);
+	
+	module.exports = Bind;
+
+
+/***/ },
+/* 5 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var _middleware = __webpack_require__(3);
+	
+	function If(obs, cpt) {
+	
+	  return function (component) {};
+	};
+	
+	module.exports = If;
+	
+	// ...
+
+
+/***/ },
+/* 6 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+	
+	var _component = __webpack_require__(1);
+	
+	var _middleware = __webpack_require__(3);
+	
+	var RepeaterComponent = (function (_Component) {
+	  function RepeaterComponent() {
+	    _classCallCheck(this, RepeaterComponent);
+	
+	    if (_Component != null) {
+	      _Component.apply(this, arguments);
+	    }
+	  }
+	
+	  _inherits(RepeaterComponent, _Component);
+	
+	  return RepeaterComponent;
+	})(_component.Component);
+	
+	/**
+	 * Decorate the component so that
+	 */
+	function Repeat(obs, opts, repeater) {
+	
+	  return function (component) {};
+	};
+	
+	var RepeatMiddleware = (function (_Middleware) {
+	  function RepeatMiddleware() {
+	    _classCallCheck(this, RepeatMiddleware);
+	
+	    if (_Middleware != null) {
+	      _Middleware.apply(this, arguments);
+	    }
+	  }
+	
+	  _inherits(RepeatMiddleware, _Middleware);
+	
+	  return RepeatMiddleware;
+	})(_middleware.Middleware);
+	
+	module.exports = Repeat;
 
 
 /***/ }
