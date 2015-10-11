@@ -77,7 +77,7 @@
 	
 	  _createClass(It, [{
 	    key: 'view',
-	    value: function view(data) {
+	    value: function view(data, content) {
 	      if (!data.obs) data.obs = (0, _eltObservable.o)(null);
 	      data.type = data.type || 'text';
 	
@@ -89,12 +89,13 @@
 	          { 'class': 'title' },
 	          data.type || 'text'
 	        ),
+	        ' ',
 	        (0, _eltComponent.elt)(
 	          'code',
 	          { 'class': 'result' },
 	          data.obs
 	        ),
-	        (0, _eltComponent.elt)('input', { type: data.type, $$: (0, _eltMiddleware.Bind)(data.obs) })
+	        content.length ? content : (0, _eltComponent.elt)('input', { type: data.type, $$: (0, _eltMiddleware.Bind)(data.obs) })
 	      );
 	    }
 	  }]);
@@ -132,9 +133,6 @@
 	    };
 	    this.props = ['txt'];
 	  }
-	
-	  // FIXME il faut bien revoir le unmount pour que les nodes et attributs qui font des observations
-	  //    les arrêtent. On risque d'avoir pas mal de memory leaks sinon.
 	
 	  _createClass(MyApp, [{
 	    key: 'view',
@@ -182,7 +180,6 @@
 	          (0, _eltComponent.elt)(It, { type: 'month', obs: data.month }),
 	          (0, _eltComponent.elt)(It, { type: 'week', obs: data.week }),
 	          (0, _eltComponent.elt)(It, { type: 'time', obs: data.time }),
-	          (0, _eltComponent.elt)(It, { type: 'datetime', obs: data.datetime }),
 	          (0, _eltComponent.elt)(It, { type: 'datetime-local', obs: data.datetime_local })
 	        ),
 	        (0, _eltComponent.elt)(
@@ -213,7 +210,6 @@
 	        (0, _eltComponent.elt)(
 	          'span',
 	          null,
-	          ' ',
 	          data.txt,
 	          ' !!!!'
 	        ),
@@ -221,7 +217,6 @@
 	        (0, _eltComponent.elt)(
 	          'span',
 	          null,
-	          ' ',
 	          data.bool,
 	          ' !!!!'
 	        ),
@@ -301,6 +296,7 @@
 	  };
 	
 	  Observable.prototype.set = function set(value) {
+	    // FIXME need to check if the value is a promise or an observable.
 	
 	    // No need to change.
 	    if (this._value === value) return;
@@ -467,7 +463,12 @@
 	   * Bulk update of a datascope.
 	   */
 	
-	  ObservableObject.prototype.set = function set(o) {};
+	  ObservableObject.prototype.set = function set(o) {
+	
+	    for (var _name2 in o) {
+	      if (_name2 in this) this.define(_name2, o[_name2]);else this[_name2] = o[_name2];
+	    }
+	  };
 	
 	  return ObservableObject;
 	})();
@@ -523,7 +524,7 @@
 	});
 	exports.elt = elt;
 	
-	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 	
@@ -536,46 +537,36 @@
 	  function Component() {
 	    var _this = this;
 	
-	    var attrs = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+	    var attrs = arguments[0] === undefined ? {} : arguments[0];
+	    var children = arguments[1] === undefined ? [] : arguments[1];
 	
 	    _classCallCheck(this, Component);
 	
 	    this.$node = null;
 	    this.$parentNode = null;
-	    this.$content = null;
 	    this.$parentComponent = null;
 	    this.$middleware = [];
 	    this.props = [];
 	    this.initial_data = {};
 	
-	    this.setContentInsertion = function (component) {
-	      return {
-	        // Bound function because we want to access the this.
-	        view: function view(data, next) {
-	          var elt = next(data);
-	          _this.$content = elt.$node;
-	          return elt;
-	        }
-	      };
-	    };
-	
 	    attrs = attrs || {};
 	
 	    // Handle middleware.
 	    if (attrs.$$) {
-	      this.$middleware = attrs.$$ instanceof Array ? attrs.$$ : [attrs.$$];
+	      this.$middleware = (attrs.$$ instanceof Array ? attrs.$$ : [attrs.$$]).map(function (mc) {
+	        return mc(_this);
+	      }).filter(function (e) {
+	        return e != null;
+	      });
 	      delete attrs.$$;
 	    }
 	
 	    this.attrs = attrs;
+	    this.children = children;
 	  }
 	
-	  /**
-	   *
-	   */
-	
 	  Component.prototype.compile = function compile() {
-	    var additional_data = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+	    var additional_data = arguments[0] === undefined ? {} : arguments[0];
 	
 	    var data = Object.assign({}, this.initial_data, additional_data);
 	    this.data = new _observable.ObservableObject(data);
@@ -601,10 +592,23 @@
 	      }
 	    }
 	
-	    this.$view = this.view(this.data);
-	    this.$view.setParentComponent(this);
-	    this.$content = this.$node = this.$view.$node;
+	    var v = null;
+	    v = this.view(this.data, this.children);
 	
+	    this.$view = v;
+	
+	    this.$view.setParentComponent(this);
+	    this.$node = this.$view.$node;
+	
+	    this.link();
+	  };
+	
+	  Component.prototype.view = function view() {
+	    return null;
+	  };
+	
+	  Component.prototype.link = function link() {
+	    // This is typically when middlewares and the component should comunicate.
 	    for (var _iterator2 = this.$middleware, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
 	      var _ref2;
 	
@@ -619,12 +623,9 @@
 	
 	      var m = _ref2;
 	
-	      var res = new m(this);
-	      // should store them...
+	      m.link();
 	    }
-	  };
 	
-	  Component.prototype.view = function view() {
 	    return null;
 	  };
 	
@@ -649,12 +650,30 @@
 	
 	  Component.prototype.appendChild = function appendChild(child) {
 	    // content is a Node.
-	    var content = this.$content || this.$node;
+	    var $node = this.$node;
 	
-	    if (typeof child === 'string' || child instanceof Number || child instanceof Boolean) {
+	    if (Array.isArray(child)) {
+	
+	      for (var _iterator3 = child, _isArray3 = Array.isArray(_iterator3), _i3 = 0, _iterator3 = _isArray3 ? _iterator3 : _iterator3[Symbol.iterator]();;) {
+	        var _ref3;
+	
+	        if (_isArray3) {
+	          if (_i3 >= _iterator3.length) break;
+	          _ref3 = _iterator3[_i3++];
+	        } else {
+	          _i3 = _iterator3.next();
+	          if (_i3.done) break;
+	          _ref3 = _i3.value;
+	        }
+	
+	        var c = _ref3;
+	
+	        this.appendChild(c);
+	      }
+	    } else if (typeof child === 'string' || child instanceof Number || child instanceof Boolean) {
 	      // Simple text node.
 	      // Note
-	      content.appendChild(document.createTextNode(child.toString()));
+	      $node.appendChild(document.createTextNode(child.toString()));
 	    } else if (child instanceof _observable.Observable) {
 	      (function () {
 	        // A text node that will be bound
@@ -665,18 +684,18 @@
 	          if (typeof val === 'object') val = JSON.stringify(val);
 	          txt.textContent = val.toString();
 	        });
-	        content.appendChild(txt);
+	        $node.appendChild(txt);
 	      })();
 	    } else if (child instanceof Node) {
-	      content.appendChild(c);
+	      $node.appendChild(child);
 	    } else if (child instanceof Component) {
 	      // Get its HTML node.
 	      child.setParentComponent(elt);
-	      content.appendChild(child.$node);
+	      $node.appendChild(child.$node);
 	    } else {
 	      // When all else fail, then try to at least create a JSON-ificated version of it.
 	      // FIXME probably not.
-	      content.appendChild(document.createTextNode(JSON.stringify(child)));
+	      $node.appendChild(document.createTextNode(JSON.stringify(child)));
 	    }
 	  };
 	
@@ -703,9 +722,11 @@
 	
 	exports.Component = Component;
 	
-	var TextObservable = (function (_Component) {
-	  _inherits(TextObservable, _Component);
+	/**
+	 *
+	 */
 	
+	var TextObservable = (function (_Component) {
 	  function TextObservable(obs) {
 	    _classCallCheck(this, TextObservable);
 	
@@ -717,51 +738,37 @@
 	    // obs.onchange((v) => this.$node.textContent);
 	  }
 	
-	  /**
-	   *
-	   */
+	  _inherits(TextObservable, _Component);
+	
 	  return TextObservable;
 	})(Component);
 	
 	exports.TextObservable = TextObservable;
 	
-	var HtmlComponent = (function (_Component2) {
-	  _inherits(HtmlComponent, _Component2);
+	/**
+	 *
+	 */
 	
-	  function HtmlComponent(elt) {
-	    var attrs = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+	var HtmlComponent = (function (_Component2) {
+	  function HtmlComponent(elt, _x4, children) {
+	    var attrs = arguments[1] === undefined ? {} : arguments[1];
 	
 	    _classCallCheck(this, HtmlComponent);
 	
-	    _Component2.call(this, attrs);
+	    _Component2.call(this, attrs, children);
 	
 	    assert('string' === typeof elt);
 	
 	    this.elt = elt;
 	  }
 	
-	  /**
-	   *
-	   * NOTE During the element instanciation, it is expected
-	   * 		that the children are already instanciated components.
-	   *
-	   * @param  {Component|String} elt
-	   *         A Component or the name of the html element to create.
-	   * @param  {Object} attrs
-	   *         The attributes that go onto the node. They can hold Observable
-	   *         objects.
-	   * @param  {Component|Node|Any} ...children
-	   *         List of children to append to this component.
-	   * @return {Component}
-	   *         The resulting instanciated component, with a $node property
-	   *         ready to be inserted into the DOM.
-	   */
+	  _inherits(HtmlComponent, _Component2);
 	
 	  /**
 	   * Create the html node.
 	   */
 	
-	  HtmlComponent.prototype.view = function view(data) {
+	  HtmlComponent.prototype.view = function view(data, children) {
 	    var _this2 = this;
 	
 	    var e = document.createElement(this.elt);
@@ -786,10 +793,49 @@
 	    return { $node: e, setParentComponent: function setParentComponent() {} };
 	  };
 	
+	  HtmlComponent.prototype.compile = function compile() {
+	
+	    _Component2.prototype.compile.call(this);
+	
+	    for (var _iterator4 = this.children, _isArray4 = Array.isArray(_iterator4), _i4 = 0, _iterator4 = _isArray4 ? _iterator4 : _iterator4[Symbol.iterator]();;) {
+	      var _ref4;
+	
+	      if (_isArray4) {
+	        if (_i4 >= _iterator4.length) break;
+	        _ref4 = _iterator4[_i4++];
+	      } else {
+	        _i4 = _iterator4.next();
+	        if (_i4.done) break;
+	        _ref4 = _i4.value;
+	      }
+	
+	      var c = _ref4;
+	
+	      this.appendChild(c);
+	    }
+	  };
+	
 	  return HtmlComponent;
 	})(Component);
 	
 	exports.HtmlComponent = HtmlComponent;
+	
+	/**
+	 *
+	 * NOTE During the element instanciation, it is expected
+	 * 		that the children are already instanciated components.
+	 *
+	 * @param  {Component|String} elt
+	 *         A Component or the name of the html element to create.
+	 * @param  {Object} attrs
+	 *         The attributes that go onto the node. They can hold Observable
+	 *         objects.
+	 * @param  {Component|Node|Any} ...children
+	 *         List of children to append to this component.
+	 * @return {Component}
+	 *         The resulting instanciated component, with a $node property
+	 *         ready to be inserted into the DOM.
+	 */
 	
 	function elt(elt, attrs) {
 	  for (var _len = arguments.length, children = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
@@ -800,33 +846,21 @@
 	
 	  if (typeof elt === 'string') {
 	    // Create a simple Html node.
-	    elt = new HtmlComponent(elt, attrs);
+	    elt = new HtmlComponent(elt, attrs, children);
 	  } else if (elt instanceof Function) {
+	    // instanceof Function because elt is a constructor at this stage, not
+	    // an actual instance of a component.
 	
 	    // Create a component, as a constructor was given to us as first argument.
 	    elt = new elt(attrs, children);
-	  }
+	  } else {}
 	
 	  elt.compile();
 	
-	  // For each child, construct their node.
-	  for (var _iterator3 = children, _isArray3 = Array.isArray(_iterator3), _i3 = 0, _iterator3 = _isArray3 ? _iterator3 : _iterator3[Symbol.iterator]();;) {
-	    var _ref3;
-	
-	    if (_isArray3) {
-	      if (_i3 >= _iterator3.length) break;
-	      _ref3 = _iterator3[_i3++];
-	    } else {
-	      _i3 = _iterator3.next();
-	      if (_i3.done) break;
-	      _ref3 = _i3.value;
-	    }
-	
-	    var _c = _ref3;
-	
-	    if (typeof _c === 'undefined') continue;
-	    elt.appendChild(_c);
-	  }
+	  // for (let c of children) {
+	  //   if (typeof c === 'undefined') continue;
+	  //   elt.appendChild(c);
+	  // }
 	
 	  // By this point, elt.$node is ready for insertion into the DOM.
 	  return elt;
@@ -837,6 +871,8 @@
 
 	// The data spec for this component. Note that it can be overriden
 	// (although rarely, usually by Repeat)
+
+	// FIXME should trigger some kind of error here.
 
 
 /***/ },
@@ -852,47 +888,28 @@
 	Object.defineProperty(exports, '__esModule', {
 	  value: true
 	});
-	exports.Click = Click;
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 	
-	var Attr = function Attr(obj, cpt) {};
-	
-	exports.Attr = Attr;
-	var On = function On(evt_name, cbk) {
-	
-	  return function (component) {
-	    // Est-ce qu'on peut se unsubscribe ?
-	    component.$node.addEventListener(evt_name, cbk);
-	    return node;
-	  };
-	};
-	
-	exports.On = On;
-	
 	var Middleware = (function () {
-	  function Middleware() {
+	  function Middleware(cmp) {
 	    _classCallCheck(this, Middleware);
 	
 	    this.$component = null;
+	
+	    this.$component = cmp;
 	  }
 	
-	  Middleware.prototype.setComponent = function setComponent(cmp) {
-	    this.$component = cmp;
-	  };
+	  Middleware.prototype.view = function view() {};
+	
+	  Middleware.prototype.link = function link() {};
 	
 	  return Middleware;
 	})();
 	
 	exports.Middleware = Middleware;
 	
-	function Click(fn) {
-	
-	  return function (component) {
-	    component.$node.addEventListener('click', fn);
-	  };
-	}
-	
+	exports.Click = __webpack_require__(7);
 	exports.Bind = __webpack_require__(4);
 	exports.If = __webpack_require__(5);
 	exports.Repeat = __webpack_require__(6);
@@ -906,7 +923,7 @@
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 	
-	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
 	
 	var _middleware = __webpack_require__(3);
 	
@@ -919,21 +936,24 @@
 	};
 	
 	var BindMiddleware = (function (_Middleware) {
-	  _inherits(BindMiddleware, _Middleware);
-	
 	  function BindMiddleware(component, observable, opts) {
 	    _classCallCheck(this, BindMiddleware);
 	
-	    _Middleware.call(this);
+	    _Middleware.call(this, component);
 	
-	    this.$component = null;
 	    this.$creator = Bind;
-	    this.$component = component;
 	    this.observable = observable;
 	    this.opts = opts;
+	  }
+	
+	  _inherits(BindMiddleware, _Middleware);
+	
+	  BindMiddleware.prototype.link = function link() {
 	
 	    // We're calling bind on a classic HTML node.
-	    var node = component.$node;
+	    var observable = this.observable;
+	    var opts = this.opts;
+	    var node = this.$component.$node;
 	    var tag = node.tagName.toLowerCase();
 	
 	    if (tag === 'input') {
@@ -985,7 +1005,7 @@
 	          node.addEventListener('change', cbk);
 	      }
 	    } else if (tag === 'textarea') {} else if (tag === 'select') {}
-	  }
+	  };
 	
 	  return BindMiddleware;
 	})(_middleware.Middleware);
@@ -1003,12 +1023,12 @@
 	
 	function If(obs, cpt) {
 	
-	  return function (component) {
-	    // ...
-	  };
+	  return function (component) {};
 	};
 	
 	module.exports = If;
+	
+	// ...
 
 
 /***/ },
@@ -1019,45 +1039,88 @@
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 	
-	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
 	
 	var _component = __webpack_require__(2);
 	
 	var _middleware = __webpack_require__(3);
 	
 	var RepeaterComponent = (function (_Component) {
-	  _inherits(RepeaterComponent, _Component);
-	
 	  function RepeaterComponent() {
 	    _classCallCheck(this, RepeaterComponent);
 	
-	    _Component.apply(this, arguments);
+	    if (_Component != null) {
+	      _Component.apply(this, arguments);
+	    }
 	  }
 	
-	  /**
-	   * Decorate the component so that
-	   */
+	  _inherits(RepeaterComponent, _Component);
+	
 	  return RepeaterComponent;
 	})(_component.Component);
 	
+	/**
+	 * Decorate the component so that
+	 */
 	function Repeat(obs, opts, repeater) {
 	
 	  return function (component) {};
 	};
 	
 	var RepeatMiddleware = (function (_Middleware) {
-	  _inherits(RepeatMiddleware, _Middleware);
-	
 	  function RepeatMiddleware() {
 	    _classCallCheck(this, RepeatMiddleware);
 	
-	    _Middleware.apply(this, arguments);
+	    if (_Middleware != null) {
+	      _Middleware.apply(this, arguments);
+	    }
 	  }
+	
+	  _inherits(RepeatMiddleware, _Middleware);
 	
 	  return RepeatMiddleware;
 	})(_middleware.Middleware);
 	
 	module.exports = Repeat;
+
+
+/***/ },
+/* 7 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+	
+	var _middleware = __webpack_require__(3);
+	
+	function Click(cbk) {
+	
+	  return function (component) {
+	    return new ClickMiddleware(component, cbk);
+	  };
+	}
+	
+	var ClickMiddleware = (function (_Middleware) {
+	  function ClickMiddleware(component, cbk) {
+	    _classCallCheck(this, ClickMiddleware);
+	
+	    _Middleware.call(this, component);
+	    this.cbk = cbk;
+	  }
+	
+	  _inherits(ClickMiddleware, _Middleware);
+	
+	  ClickMiddleware.prototype.link = function link() {
+	    this.$component.$node.addEventListener('click', this.cbk);
+	  };
+	
+	  return ClickMiddleware;
+	})(_middleware.Middleware);
+	
+	module.exports = Click;
 
 
 /***/ }

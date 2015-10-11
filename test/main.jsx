@@ -10,15 +10,14 @@ import {Bind, Click} from 'elt/middleware';
 class It extends Component {
   props = ['obs', 'type'];
 
-  view(data) {
+  view(data, content) {
     if (!data.obs)
       data.obs = o(null);
     data.type = data.type || 'text';
 
     return <li>
-        <span class='title'>{data.type || 'text'}</span>
-        <code class='result'>{data.obs}</code>
-        <input type={data.type} $$={Bind(data.obs)}/>
+        <span class='title'>{data.type || 'text'}</span> <code class='result'>{data.obs}</code>
+        {content.length ? content : <input type={data.type} $$={Bind(data.obs)}/>}
       </li>
   }
 }
@@ -91,15 +90,14 @@ class MyApp extends Component {
         <It type='month' obs={data.month}></It>
         <It type='week' obs={data.week}></It>
         <It type='time' obs={data.time}></It>
-        <It type='datetime' obs={data.datetime}></It>
         <It type='datetime-local' obs={data.datetime_local}></It>
       </ul>
 
       <h2>Some Random Listeners</h2>
       <span class='pouet'>{false} {new Date()}</span> <button $$={Click(this.test.bind(this))}>Click me !</button><br/>
       <span>{data.obj}</span><br/>
-      <span> {data.txt} !!!!</span><br/>
-      <span> {data.bool} !!!!</span><br/>
+      <span>{data.txt} !!!!</span><br/>
+      <span>{data.bool} !!!!</span><br/>
     </div>;
   }
   // <span><input type='text' name='toto2' $$={Bind(data.obs.a)}/> {data.obs.a} !!!!</span><br/>
@@ -110,6 +108,4 @@ class MyApp extends Component {
 
 }
 
-// FIXME il faut bien revoir le unmount pour que les nodes et attributs qui font des observations
-//    les arrêtent. On risque d'avoir pas mal de memory leaks sinon.
 <MyApp txt='pouet !'/>.mount(document.body);
