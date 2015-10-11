@@ -18,6 +18,7 @@ class It extends Component {
     return <li>
         <span class='title'>{data.type || 'text'}</span> <code class='result'>{data.obs}</code>
         {content.length ? content : <input type={data.type} $$={Bind(data.obs)}/>}
+        <button $$={Click(this.unmount.bind(this))}>X</button>
       </li>
   }
 }

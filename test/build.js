@@ -95,7 +95,12 @@
 	          { 'class': 'result' },
 	          data.obs
 	        ),
-	        content.length ? content : (0, _eltComponent.elt)('input', { type: data.type, $$: (0, _eltMiddleware.Bind)(data.obs) })
+	        content.length ? content : (0, _eltComponent.elt)('input', { type: data.type, $$: (0, _eltMiddleware.Bind)(data.obs) }),
+	        (0, _eltComponent.elt)(
+	          'button',
+	          { $$: (0, _eltMiddleware.Click)(this.unmount.bind(this)) },
+	          'X'
+	        )
 	      );
 	    }
 	  }]);
@@ -511,6 +516,32 @@
 	
 	  return res;
 	}
+	
+	/**
+	 * Get the current value of the observable, or the value itself if the
+	 * provided parameter was not an observable.
+	 * @param  {[type]} v [description]
+	 * @return {[type]}   [description]
+	 */
+	o.get = function get(v) {
+	  if (v instanceof Observable) return v.get();
+	  return v;
+	};
+	
+	/**
+	 * Setup an onchange event on the observable, or just call the
+	 * onchange value once if the provided o is not an observable.
+	 * @param  {[type]}   o  [description]
+	 * @param  {Function} fn [description]
+	 * @return {[type]}      [description]
+	 */
+	o.onchange = function onchange(o, fn) {
+	  if (o instanceof Observable) return o.onchange(fn);
+	  // the object is not observable, so the onchange value is immediately called.
+	  fn(o);
+	  // return a function that does nothing, since nothing is being registered.
+	  return function () {};
+	};
 
 
 /***/ },
@@ -546,6 +577,8 @@
 	    this.$parentNode = null;
 	    this.$parentComponent = null;
 	    this.$middleware = [];
+	    this.$unloaders = [];
+	    this.$children = [];
 	    this.props = [];
 	    this.initial_data = {};
 	
@@ -597,7 +630,9 @@
 	
 	    this.$view = v;
 	
+	    // Special case, we can't append child here since basically we're wrapping for other components.
 	    this.$view.setParentComponent(this);
+	    this.$children.push(this.$view);
 	    this.$node = this.$view.$node;
 	
 	    this.link();
@@ -625,8 +660,6 @@
 	
 	      m.link();
 	    }
-	
-	    return null;
 	  };
 	
 	  Component.prototype.setParentComponent = function setParentComponent(component) {
@@ -649,6 +682,8 @@
 	   */
 	
 	  Component.prototype.appendChild = function appendChild(child) {
+	    var _this2 = this;
+	
 	    // content is a Node.
 	    var $node = this.$node;
 	
@@ -670,134 +705,44 @@
 	
 	        this.appendChild(c);
 	      }
-	    } else if (typeof child === 'string' || child instanceof Number || child instanceof Boolean) {
-	      // Simple text node.
-	      // Note
-	      $node.appendChild(document.createTextNode(child.toString()));
-	    } else if (child instanceof _observable.Observable) {
-	      (function () {
-	        // A text node that will be bound
-	        // child = new TextObservable(child);
-	        var txt = document.createTextNode('null');
-	        // FIXME should do some stringify.
-	        child.onchange(function (val) {
-	          if (typeof val === 'object') val = JSON.stringify(val);
-	          txt.textContent = val.toString();
-	        });
-	        $node.appendChild(txt);
-	      })();
 	    } else if (child instanceof Node) {
+	
+	      // A DOM Node is simply appended to $node.
 	      $node.appendChild(child);
 	    } else if (child instanceof Component) {
-	      // Get its HTML node.
-	      child.setParentComponent(elt);
+	
+	      child.setParentComponent(this);
+	      this.$children.push(child);
+	      // Append its html node.
 	      $node.appendChild(child.$node);
 	    } else {
-	      // When all else fail, then try to at least create a JSON-ificated version of it.
-	      // FIXME probably not.
-	      $node.appendChild(document.createTextNode(JSON.stringify(child)));
+	      (function () {
+	        // If the node is nothing mountable, then we shall try to render it
+	        // on a text node.
+	
+	        var txt = document.createTextNode('');
+	
+	        // We use o.onchange to handle both observable and regular values.
+	        _this2.$unloaders.push(_observable.o.onchange(child, function (val) {
+	          if (val === undefined || val === null) val = '';else if (typeof val === 'object') val = JSON.stringify(val);
+	          txt.textContent = val.toString();
+	        }));
+	
+	        $node.appendChild(txt);
+	      })();
 	    }
 	  };
 	
-	  Component.prototype.unmount = function unmount() {
-	    // remove from the parent DOM node if it is mounted
-	    // destroy the data, observables and such.
-	    if (!this.$parentNode) throw new Error('this node was not mounted');
-	    this.$parentNode.removeChild(this.$node);
-	    this.$parentNode = null;
-	    this.data.destroy();
-	  };
-	
-	  Component.prototype.mount = function mount(domnode) {
-	    if (this.$parentNode) {
-	      // maybe we could just let the node be mounted elsewhere ?
-	      throw new Error('already mounted !');
+	  Component.prototype.removeChild = function removeChild(child) {
+	    var idx = this.$children.indexOf(child);
+	    if (idx > -1) {
+	      this.$children.splice(idx, 1);
 	    }
-	    this.$parentNode = domnode;
-	    domnode.appendChild(this.$node);
 	  };
 	
-	  return Component;
-	})();
+	  Component.prototype.unload = function unload() {
 	
-	exports.Component = Component;
-	
-	/**
-	 *
-	 */
-	
-	var TextObservable = (function (_Component) {
-	  function TextObservable(obs) {
-	    _classCallCheck(this, TextObservable);
-	
-	    _Component.call(this);
-	    this.$node = document.createTextNode('');
-	
-	    // Whenever the observed change, just set its value to its string content.
-	    // obs.onchange((v) => this.$node.textContent = v.toString());
-	    // obs.onchange((v) => this.$node.textContent);
-	  }
-	
-	  _inherits(TextObservable, _Component);
-	
-	  return TextObservable;
-	})(Component);
-	
-	exports.TextObservable = TextObservable;
-	
-	/**
-	 *
-	 */
-	
-	var HtmlComponent = (function (_Component2) {
-	  function HtmlComponent(elt, _x4, children) {
-	    var attrs = arguments[1] === undefined ? {} : arguments[1];
-	
-	    _classCallCheck(this, HtmlComponent);
-	
-	    _Component2.call(this, attrs, children);
-	
-	    assert('string' === typeof elt);
-	
-	    this.elt = elt;
-	  }
-	
-	  _inherits(HtmlComponent, _Component2);
-	
-	  /**
-	   * Create the html node.
-	   */
-	
-	  HtmlComponent.prototype.view = function view(data, children) {
-	    var _this2 = this;
-	
-	    var e = document.createElement(this.elt);
-	
-	    var _loop = function (attribute_name) {
-	      var att = _this2.attrs[attribute_name];
-	
-	      if (att instanceof _observable.Observable) {
-	        att.onchange(function (val) {
-	          if (typeof val === 'object') e.setAttribute(attribute_name, JSON.stringify(val));else e.setAttribute(attribute_name, val);
-	        });
-	      } else {
-	        e.setAttribute(attribute_name, att);
-	      }
-	    };
-	
-	    for (var attribute_name in this.attrs) {
-	      _loop(attribute_name);
-	    }
-	
-	    // empty setParentComponent as this one shall never have one.
-	    return { $node: e, setParentComponent: function setParentComponent() {} };
-	  };
-	
-	  HtmlComponent.prototype.compile = function compile() {
-	
-	    _Component2.prototype.compile.call(this);
-	
-	    for (var _iterator4 = this.children, _isArray4 = Array.isArray(_iterator4), _i4 = 0, _iterator4 = _isArray4 ? _iterator4 : _iterator4[Symbol.iterator]();;) {
+	    for (var _iterator4 = this.$unloaders, _isArray4 = Array.isArray(_iterator4), _i4 = 0, _iterator4 = _isArray4 ? _iterator4 : _iterator4[Symbol.iterator]();;) {
 	      var _ref4;
 	
 	      if (_isArray4) {
@@ -809,10 +754,160 @@
 	        _ref4 = _i4.value;
 	      }
 	
-	      var c = _ref4;
+	      var u = _ref4;
+	
+	      u.call(this);
+	    }
+	
+	    for (var _iterator5 = this.$middleware, _isArray5 = Array.isArray(_iterator5), _i5 = 0, _iterator5 = _isArray5 ? _iterator5 : _iterator5[Symbol.iterator]();;) {
+	      var _ref5;
+	
+	      if (_isArray5) {
+	        if (_i5 >= _iterator5.length) break;
+	        _ref5 = _iterator5[_i5++];
+	      } else {
+	        _i5 = _iterator5.next();
+	        if (_i5.done) break;
+	        _ref5 = _i5.value;
+	      }
+	
+	      var m = _ref5;
+	
+	      m.unload();
+	    }
+	
+	    for (var _iterator6 = this.$children, _isArray6 = Array.isArray(_iterator6), _i6 = 0, _iterator6 = _isArray6 ? _iterator6 : _iterator6[Symbol.iterator]();;) {
+	      var _ref6;
+	
+	      if (_isArray6) {
+	        if (_i6 >= _iterator6.length) break;
+	        _ref6 = _iterator6[_i6++];
+	      } else {
+	        _i6 = _iterator6.next();
+	        if (_i6.done) break;
+	        _ref6 = _i6.value;
+	      }
+	
+	      var c = _ref6;
+	
+	      c.unload();
+	    }
+	
+	    this.$unloaders = [];
+	  };
+	
+	  Component.prototype.unmount = function unmount() {
+	
+	    for (var _iterator7 = this.$children, _isArray7 = Array.isArray(_iterator7), _i7 = 0, _iterator7 = _isArray7 ? _iterator7 : _iterator7[Symbol.iterator]();;) {
+	      var _ref7;
+	
+	      if (_isArray7) {
+	        if (_i7 >= _iterator7.length) break;
+	        _ref7 = _iterator7[_i7++];
+	      } else {
+	        _i7 = _iterator7.next();
+	        if (_i7.done) break;
+	        _ref7 = _i7.value;
+	      }
+	
+	      var c = _ref7;
+	
+	      c.unmount();
+	    }
+	
+	    this.unload();
+	
+	    // remove the component from its parent.
+	    if (this.$parentComponent) this.$parentComponent.removeChild(this);
+	    this.$node = null;
+	  };
+	
+	  Component.prototype.mount = function mount(domnode) {
+	    domnode.appendChild(this.$node);
+	  };
+	
+	  Component.prototype.toString = function toString() {
+	    return this.constructor.name;
+	  };
+	
+	  return Component;
+	})();
+	
+	exports.Component = Component;
+	
+	/**
+	 *
+	 */
+	
+	var HtmlComponent = (function (_Component) {
+	  function HtmlComponent(elt, _x4, children) {
+	    var attrs = arguments[1] === undefined ? {} : arguments[1];
+	
+	    _classCallCheck(this, HtmlComponent);
+	
+	    _Component.call(this, attrs, children);
+	
+	    assert('string' === typeof elt);
+	
+	    this.elt = elt;
+	  }
+	
+	  _inherits(HtmlComponent, _Component);
+	
+	  HtmlComponent.prototype.toString = function toString() {
+	    return '<' + this.elt + '>';
+	  };
+	
+	  /**
+	   * Create the html node.
+	   */
+	
+	  HtmlComponent.prototype.compile = function compile(data, children) {
+	    var _this3 = this;
+	
+	    var e = document.createElement(this.elt);
+	
+	    var _loop = function (attribute_name) {
+	      var att = _this3.attrs[attribute_name];
+	      _this3.$unloaders.push(_observable.o.onchange(att, function (val) {
+	        if (typeof val === 'object') e.setAttribute(attribute_name, JSON.stringify(val));else e.setAttribute(attribute_name, val);
+	      }));
+	    };
+	
+	    for (var attribute_name in this.attrs) {
+	      _loop(attribute_name);
+	    }
+	
+	    this.$node = e;
+	
+	    for (var _iterator8 = this.children, _isArray8 = Array.isArray(_iterator8), _i8 = 0, _iterator8 = _isArray8 ? _iterator8 : _iterator8[Symbol.iterator]();;) {
+	      var _ref8;
+	
+	      if (_isArray8) {
+	        if (_i8 >= _iterator8.length) break;
+	        _ref8 = _iterator8[_i8++];
+	      } else {
+	        _i8 = _iterator8.next();
+	        if (_i8.done) break;
+	        _ref8 = _i8.value;
+	      }
+	
+	      var c = _ref8;
 	
 	      this.appendChild(c);
 	    }
+	
+	    this.link();
+	  };
+	
+	  HtmlComponent.prototype.unmount = function unmount() {
+	    // remove from the parent DOM node if it is mounted
+	    // destroy the data, observables and such.
+	    if (!this.$node.parentNode) throw new Error('this node was not mounted');
+	    this.$node.parentNode.removeChild(this.$node);
+	    this.$node = null;
+	
+	    _Component.prototype.unmount.call(this);
 	  };
 	
 	  return HtmlComponent;
@@ -896,6 +991,7 @@
 	    _classCallCheck(this, Middleware);
 	
 	    this.$component = null;
+	    this.$unloaders = [];
 	
 	    this.$component = cmp;
 	  }
@@ -904,15 +1000,38 @@
 	
 	  Middleware.prototype.link = function link() {};
 	
+	  Middleware.prototype.unload = function unload() {
+	    for (var _iterator = this.$unloaders, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
+	      var _ref;
+	
+	      if (_isArray) {
+	        if (_i >= _iterator.length) break;
+	        _ref = _iterator[_i++];
+	      } else {
+	        _i = _iterator.next();
+	        if (_i.done) break;
+	        _ref = _i.value;
+	      }
+	
+	      var u = _ref;
+	
+	      u.call(this);
+	    }
+	
+	    this.$unloaders = [];
+	  };
+	
+	  Middleware.prototype.unmount = function unmount() {};
+	
 	  return Middleware;
 	})();
 	
 	exports.Middleware = Middleware;
 	
-	exports.Click = __webpack_require__(7);
-	exports.Bind = __webpack_require__(4);
-	exports.If = __webpack_require__(5);
-	exports.Repeat = __webpack_require__(6);
+	exports.Click = __webpack_require__(4);
+	exports.Bind = __webpack_require__(5);
+	exports.If = __webpack_require__(6);
+	exports.Repeat = __webpack_require__(7);
 
 
 /***/ },
@@ -926,6 +1045,48 @@
 	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
 	
 	var _middleware = __webpack_require__(3);
+	
+	function Click(cbk) {
+	
+	  return function (component) {
+	    return new ClickMiddleware(component, cbk);
+	  };
+	}
+	
+	var ClickMiddleware = (function (_Middleware) {
+	  function ClickMiddleware(component, cbk) {
+	    _classCallCheck(this, ClickMiddleware);
+	
+	    _Middleware.call(this, component);
+	    this.cbk = cbk;
+	  }
+	
+	  _inherits(ClickMiddleware, _Middleware);
+	
+	  ClickMiddleware.prototype.link = function link() {
+	    // No need to unregister this.
+	    this.$component.$node.addEventListener('click', this.cbk);
+	  };
+	
+	  return ClickMiddleware;
+	})(_middleware.Middleware);
+	
+	module.exports = Click;
+
+
+/***/ },
+/* 5 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+	
+	var _middleware = __webpack_require__(3);
+	
+	var _observable = __webpack_require__(1);
 	
 	function Bind(observable, opts) {
 	  if (!observable) return;
@@ -942,6 +1103,8 @@
 	    _Middleware.call(this, component);
 	
 	    this.$creator = Bind;
+	    assert(observable instanceof _observable.Observable);
+	
 	    this.observable = observable;
 	    this.opts = opts;
 	  }
@@ -973,21 +1136,21 @@
 	        case 'week':
 	        case 'month':
 	        case 'datetime-local':
-	          observable.onchange(function (val) {
+	          this.$unloaders.push(observable.onchange(function (val) {
 	            return node.value = val;
-	          });
+	          }));
 	          node.addEventListener('input', cbk);
 	          break;
 	        case 'radio':
-	          observable.onchange(function (val) {
+	          this.$unloaders.push(observable.onchange(function (val) {
 	            return node.checked = node.value === val;
-	          });
+	          }));
 	          node.addEventListener('change', cbk);
 	          break;
 	        case 'checkbox':
-	          observable.onchange(function (val) {
+	          this.$unloaders.push(observable.onchange(function (val) {
 	            return val ? node.checked = true : node.checked = false;
-	          });
+	          }));
 	          node.addEventListener('change', function () {
 	            return observable.set(node.checked);
 	          });
@@ -997,9 +1160,9 @@
 	        case 'password':
 	        case 'search':
 	        default:
-	          observable.onchange(function (val) {
+	          this.$unloaders.push(observable.onchange(function (val) {
 	            return node.value = val;
-	          });
+	          }));
 	          node.addEventListener('keyup', cbk);
 	          node.addEventListener('input', cbk);
 	          node.addEventListener('change', cbk);
@@ -1014,7 +1177,7 @@
 
 
 /***/ },
-/* 5 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1032,7 +1195,7 @@
 
 
 /***/ },
-/* 6 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1082,45 +1245,6 @@
 	})(_middleware.Middleware);
 	
 	module.exports = Repeat;
-
-
-/***/ },
-/* 7 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-	
-	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
-	
-	var _middleware = __webpack_require__(3);
-	
-	function Click(cbk) {
-	
-	  return function (component) {
-	    return new ClickMiddleware(component, cbk);
-	  };
-	}
-	
-	var ClickMiddleware = (function (_Middleware) {
-	  function ClickMiddleware(component, cbk) {
-	    _classCallCheck(this, ClickMiddleware);
-	
-	    _Middleware.call(this, component);
-	    this.cbk = cbk;
-	  }
-	
-	  _inherits(ClickMiddleware, _Middleware);
-	
-	  ClickMiddleware.prototype.link = function link() {
-	    this.$component.$node.addEventListener('click', this.cbk);
-	  };
-	
-	  return ClickMiddleware;
-	})(_middleware.Middleware);
-	
-	module.exports = Click;
 
 
 /***/ }
