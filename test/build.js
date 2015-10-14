@@ -56,6 +56,8 @@
 	
 	var _eltComponent = __webpack_require__(1);
 	
+	var _eltMiddleware = __webpack_require__(3);
+	
 	window.assert = function (b) {
 	  if (!b) console.error(new Error('assert failed'));
 	};
@@ -70,6 +72,7 @@
 	
 	    this.initial_data = {
 	      txt: 'some text.',
+	      txt2: 'other text...',
 	      obj: { a: 1, b: 2 }
 	    };
 	    this.props = ['txt'];
@@ -78,6 +81,7 @@
 	  _createClass(MyApp, [{
 	    key: 'view',
 	    value: function view(data) {
+	      console.dir(data.txt2);
 	      return (0, _eltComponent.elt)(
 	        'div',
 	        null,
@@ -97,7 +101,7 @@
 	          null,
 	          data.obj,
 	          ' ',
-	          (0, _eltComponent.elt)('input', { type: 'text', name: 'toto', value: data.txt })
+	          (0, _eltComponent.elt)('input', { type: 'text', name: 'toto', value: data.txt2 })
 	        )
 	      );
 	    }
@@ -122,11 +126,15 @@
 	});
 	exports.elt = elt;
 	
-	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 	
 	var _eltObservable = __webpack_require__(2);
+	
+	var p = _interopRequireWildcard(_eltObservable);
 	
 	var Component = (function () {
 	
@@ -135,13 +143,14 @@
 	  function Component() {
 	    var _this = this;
 	
-	    var attrs = arguments[0] === undefined ? {} : arguments[0];
+	    var attrs = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 	
 	    _classCallCheck(this, Component);
 	
 	    this.$node = null;
 	    this.$content = null;
 	    this.$parentComponent = null;
+	    this.$middleware = [];
 	    this.props = [];
 	    this.initial_data = {};
 	
@@ -156,14 +165,27 @@
 	      };
 	    };
 	
+	    attrs = attrs || {};
+	
+	    // Handle middleware.
+	    if (attrs.$$) {
+	      this.$middleware = attrs.$$ instanceof Array ? attrs.$$ : [attrs.$$];
+	      delete attrs.$$;
+	    }
+	
 	    this.attrs = attrs;
 	  }
 	
-	  Component.prototype.compile = function compile() {
-	    var additional_data = arguments[0] === undefined ? {} : arguments[0];
+	  /**
+	   *
+	   */
 	
-	    // FIXME WE WANT THEM OBSERVABLES
-	    this.data = Object.assign({}, this.initial_data, additional_data);
+	  Component.prototype.compile = function compile() {
+	    var additional_data = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+	
+	    var data = Object.assign({}, this.initial_data, additional_data);
+	    this.data = new _eltObservable.ObservableObject(data);
+	
 	    var attrs = this.attrs;
 	
 	    for (var _iterator = this.props, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
@@ -178,12 +200,14 @@
 	        _ref = _i.value;
 	      }
 	
-	      var p = _ref;
+	      var _p = _ref;
 	
-	      if (p in attrs) {
-	        this.data[p] = attrs[p];
+	      if (_p in attrs) {
+	        this.data[_p] = attrs[_p];
 	      }
 	    }
+	
+	    // FIXME make this.data an observable.
 	
 	    // hmm ?? should I call the view() here ?
 	    // NOTE $content should be set up somewhere.
@@ -224,9 +248,17 @@
 	      // Note
 	      content.appendChild(document.createTextNode(child.toString()));
 	    } else if (child instanceof _eltObservable.Observable) {
-	      // A text node that will be bound
-	      child = new TextObservable(c);
-	      content.appendChild(child.$node);
+	      (function () {
+	        // A text node that will be bound
+	        // child = new TextObservable(child);
+	        var txt = document.createTextNode('null');
+	        // FIXME should do some stringify.
+	        child.onchange(function (val) {
+	          if (typeof val === 'object') val = JSON.stringify(val);
+	          txt.textContent = val.toString();
+	        });
+	        content.appendChild(txt);
+	      })();
 	    } else if (child instanceof Node) {
 	      content.appendChild(c);
 	    } else if (child instanceof Component) {
@@ -245,66 +277,75 @@
 	
 	exports.Component = Component;
 	
-	/**
-	 *
-	 */
-	
 	var TextObservable = (function (_Component) {
-	  function TextObservable(obs) {
-	    var _this2 = this;
+	  _inherits(TextObservable, _Component);
 	
+	  function TextObservable(obs) {
 	    _classCallCheck(this, TextObservable);
 	
 	    _Component.call(this);
 	    this.$node = document.createTextNode('');
 	
 	    // Whenever the observed change, just set its value to its string content.
-	    // obs.changed((v) => this.$node.textContent = v.toString());
-	    obs.changed(function (v) {
-	      return _this2.appendChild;
-	    });
+	    // obs.onchange((v) => this.$node.textContent = v.toString());
+	    // obs.onchange((v) => this.$node.textContent);
 	  }
 	
-	  _inherits(TextObservable, _Component);
-	
+	  /**
+	   *
+	   */
 	  return TextObservable;
 	})(Component);
 	
 	exports.TextObservable = TextObservable;
 	
-	/**
-	 *
-	 */
-	
 	var HtmlComponent = (function (_Component2) {
-	  function HtmlComponent(elt, attrs) {
+	  _inherits(HtmlComponent, _Component2);
+	
+	  function HtmlComponent(elt) {
+	    var attrs = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+	
 	    _classCallCheck(this, HtmlComponent);
 	
-	    _Component2.call(this);
+	    _Component2.call(this, attrs);
 	
 	    assert('string' === typeof elt);
 	
 	    this.elt = elt;
-	    this.attrs = attrs;
 	  }
 	
-	  _inherits(HtmlComponent, _Component2);
+	  /**
+	   *
+	   * NOTE During the element instanciation, it is expected
+	   * 		that the children are already instanciated components.
+	   *
+	   * @param  {Component|String} elt
+	   *         A Component or the name of the html element to create.
+	   * @param  {Object} attrs
+	   *         The attributes that go onto the node. They can hold Observable
+	   *         objects.
+	   * @param  {Component|Node|Any} ...children
+	   *         List of children to append to this component.
+	   * @return {Component}
+	   *         The resulting instanciated component, with a $node property
+	   *         ready to be inserted into the DOM.
+	   */
 	
 	  /**
 	   * Create the html node.
 	   */
 	
 	  HtmlComponent.prototype.view = function view(data) {
-	    var _this3 = this;
+	    var _this2 = this;
 	
 	    var e = document.createElement(this.elt);
 	
 	    var _loop = function (attribute_name) {
-	      var att = _this3.attrs[attribute_name];
+	      var att = _this2.attrs[attribute_name];
 	
 	      if (att instanceof _eltObservable.Observable) {
-	        att.changed(function (val) {
-	          return e.setAttribute(attribute_name, val);
+	        att.onchange(function (val) {
+	          if (typeof val === 'object') e.setAttribute(attribute_name, JSON.stringify(val));else e.setAttribute(attribute_name, val);
 	        });
 	      } else {
 	        e.setAttribute(attribute_name, att);
@@ -323,23 +364,6 @@
 	})(Component);
 	
 	exports.HtmlComponent = HtmlComponent;
-	
-	/**
-	 *
-	 * NOTE During the element instanciation, it is expected
-	 * 		that the children are already instanciated components.
-	 *
-	 * @param  {Component|String} elt
-	 *         A Component or the name of the html element to create.
-	 * @param  {Object} attrs
-	 *         The attributes that go onto the node. They can hold Observable
-	 *         objects.
-	 * @param  {Component|Node|Any} ...children
-	 *         List of children to append to this component.
-	 * @return {Component}
-	 *         The resulting instanciated component, with a $node property
-	 *         ready to be inserted into the DOM.
-	 */
 	
 	function elt(elt, attrs) {
 	  for (var _len = arguments.length, children = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
@@ -398,10 +422,6 @@
 	Object.defineProperty(exports, '__esModule', {
 	  value: true
 	});
-	
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-	
-	exports.obs = obs;
 	exports.o = o;
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
@@ -411,84 +431,72 @@
 	    _classCallCheck(this, Observable);
 	
 	    this._listeners = [];
+	    this._destroyed = false;
+	    if (value !== undefined) this.set(value);
 	  }
 	
-	  _createClass(Observable, [{
-	    key: 'reset',
-	    value: function reset() {
-	      delete this._value;
-	    }
-	  }, {
-	    key: 'get',
+	  Observable.prototype.reset = function reset() {
+	    delete this._value;
+	  };
 	
-	    /**
-	     * Get the value of the observable.
-	     */
-	    value: function get() {
-	      return this._value;
-	    }
-	  }, {
-	    key: 'set',
-	    value: function set(value) {
+	  /**
+	   * Get the value of the observable.
+	   */
 	
-	      // No need to change.
-	      if (this._value === value) return;
+	  Observable.prototype.get = function get() {
+	    return this._value;
+	  };
 	
-	      this._value = value;
+	  Observable.prototype.set = function set(value) {
 	
-	      // No need to trigger if no one is listening to us.
-	      if (this._listeners.length === 0) return;
+	    // No need to change.
+	    if (this._value === value) return;
 	
-	      var _iteratorNormalCompletion = true;
-	      var _didIteratorError = false;
-	      var _iteratorError = undefined;
+	    this._value = value;
 	
-	      try {
-	        for (var _iterator = this._listeners[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-	          var l = _step.value;
+	    // No need to trigger if no one is listening to us.
+	    if (this._listeners.length === 0) return;
 	
-	          l(value);
-	        }
-	      } catch (err) {
-	        _didIteratorError = true;
-	        _iteratorError = err;
-	      } finally {
-	        try {
-	          if (!_iteratorNormalCompletion && _iterator['return']) {
-	            _iterator['return']();
-	          }
-	        } finally {
-	          if (_didIteratorError) {
-	            throw _iteratorError;
-	          }
-	        }
+	    for (var _iterator = this._listeners, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
+	      var _ref;
+	
+	      if (_isArray) {
+	        if (_i >= _iterator.length) break;
+	        _ref = _iterator[_i++];
+	      } else {
+	        _i = _iterator.next();
+	        if (_i.done) break;
+	        _ref = _i.value;
 	      }
-	    }
-	  }, {
-	    key: 'changed',
-	    value: function changed(fn) {
-	      this._listeners.push(fn);
 	
-	      // listeners are always given the current value if it is available upon subscribing.
-	      if (this.hasOwnProperty('_value')) fn(this._value);
-	    }
-	  }, {
-	    key: 'unsubscribe',
-	    value: function unsubscribe(fn) {
-	      var idx = this._listeners.indexOf(fn);
-	      if (idx > -1) this._listeners.splice(idx, 1);
-	    }
-	  }, {
-	    key: 'destroy',
+	      var l = _ref;
 	
-	    /**
-	     * Remove all listeners and prepare to free the object.
-	     */
-	    value: function destroy() {
-	      delete this._listeners;
-	      delete this._value;
+	      l(value);
 	    }
-	  }]);
+	  };
+	
+	  Observable.prototype.onchange = function onchange(fn) {
+	    var _this = this;
+	
+	    // listeners are always given the current value if it is available upon subscribing.
+	    if (this.hasOwnProperty('_value')) fn(this._value);
+	
+	    if (this._destroyed) return;
+	
+	    this._listeners.push(fn);
+	
+	    return function () {
+	      var idx = _this._listeners.indexOf(fn);
+	      _this._listeners.splice(idx, 1);
+	    };
+	  };
+	
+	  // This Observable will never update anyone again.
+	
+	  Observable.prototype.destroy = function destroy() {
+	    this._destroyed = true;
+	    this._listeners = [];
+	  };
 	
 	  return Observable;
 	})();
@@ -499,126 +507,106 @@
 	  function ArrayObservable(a) {
 	    _classCallCheck(this, ArrayObservable);
 	
+	    this.length = new Observable();
+	
 	    this.length = new Observable(0);
 	    this.update(a);
 	  }
 	
-	  _createClass(ArrayObservable, [{
-	    key: 'update',
-	    value: function update(arr) {
-	      assert(a instanceof Array);
+	  /**
+	   * Update this array with another array.
+	   * Performs optimisation ?
+	   * @param  {Array} arr The array with the newer values.
+	   */
 	
-	      // the array hasn't changed.
-	      if (arr === this._value) ;
+	  ArrayObservable.prototype.update = function update(arr) {
+	    assert(a instanceof Array);
 	
-	      // empty the array ?
-	      var _iteratorNormalCompletion2 = true;
-	      var _didIteratorError2 = false;
-	      var _iteratorError2 = undefined;
+	    // the array hasn't changed.
+	    if (arr === this._value) ;
 	
-	      try {
-	        for (var _iterator2 = arr[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-	          var _a = _step2.value;
-	        }
-	      } catch (err) {
-	        _didIteratorError2 = true;
-	        _iteratorError2 = err;
-	      } finally {
-	        try {
-	          if (!_iteratorNormalCompletion2 && _iterator2['return']) {
-	            _iterator2['return']();
-	          }
-	        } finally {
-	          if (_didIteratorError2) {
-	            throw _iteratorError2;
-	          }
-	        }
+	    // empty the array ?
+	    for (var _iterator2 = arr, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
+	      var _ref2;
+	
+	      if (_isArray2) {
+	        if (_i2 >= _iterator2.length) break;
+	        _ref2 = _iterator2[_i2++];
+	      } else {
+	        _i2 = _iterator2.next();
+	        if (_i2.done) break;
+	        _ref2 = _i2.value;
 	      }
 	
-	      // update the length.
-	      this.length.set(this._value.length);
+	      var _a = _ref2;
 	    }
-	  }, {
-	    key: 'at',
 	
-	    // Get observable on position i
-	    // or set the object at the given position.
-	    value: function at(i, v) {}
-	  }, {
-	    key: 'destroy',
-	    value: function destroy() {
-	      var _iteratorNormalCompletion3 = true;
-	      var _didIteratorError3 = false;
-	      var _iteratorError3 = undefined;
+	    // update the length.
+	    this.length.set(this._value.length);
+	  };
 	
-	      try {
-	        for (var _iterator3 = this.items[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-	          var i = _step3.value;
+	  // Get observable on position i
+	  // or set the object at the given position.
 	
-	          i.destroy();
-	        }
-	      } catch (err) {
-	        _didIteratorError3 = true;
-	        _iteratorError3 = err;
-	      } finally {
-	        try {
-	          if (!_iteratorNormalCompletion3 && _iterator3['return']) {
-	            _iterator3['return']();
-	          }
-	        } finally {
-	          if (_didIteratorError3) {
-	            throw _iteratorError3;
-	          }
-	        }
+	  ArrayObservable.prototype.at = function at(i, v) {};
+	
+	  ArrayObservable.prototype.destroy = function destroy() {
+	    for (var _iterator3 = this.items, _isArray3 = Array.isArray(_iterator3), _i3 = 0, _iterator3 = _isArray3 ? _iterator3 : _iterator3[Symbol.iterator]();;) {
+	      var _ref3;
+	
+	      if (_isArray3) {
+	        if (_i3 >= _iterator3.length) break;
+	        _ref3 = _iterator3[_i3++];
+	      } else {
+	        _i3 = _iterator3.next();
+	        if (_i3.done) break;
+	        _ref3 = _i3.value;
 	      }
+	
+	      var i = _ref3;
+	
+	      i.destroy();
 	    }
-	  }]);
+	  };
 	
 	  return ArrayObservable;
 	})();
 	
 	exports.ArrayObservable = ArrayObservable;
 	
-	/**
-	 * This object only creates keys whenever they are needed.
-	 */
+	var ObservableObject = (function () {
+	  function ObservableObject(o) {
+	    _classCallCheck(this, ObservableObject);
 	
-	var ObjectObservable = (function () {
-	  function ObjectObservable(obj) {
-	    _classCallCheck(this, ObjectObservable);
+	    for (var _iterator4 = Object.getOwnPropertyNames(o), _isArray4 = Array.isArray(_iterator4), _i4 = 0, _iterator4 = _isArray4 ? _iterator4 : _iterator4[Symbol.iterator]();;) {
+	      var _ref4;
 	
-	    this.update(obj);
+	      if (_isArray4) {
+	        if (_i4 >= _iterator4.length) break;
+	        _ref4 = _iterator4[_i4++];
+	      } else {
+	        _i4 = _iterator4.next();
+	        if (_i4.done) break;
+	        _ref4 = _i4.value;
+	      }
+	
+	      var _name = _ref4;
+	
+	      // For now, we don't check for recursion.
+	      this[_name] = new Observable(o[_name]);
+	    }
 	  }
 	
-	  _createClass(ObjectObservable, [{
-	    key: 'update',
-	    value: function update(obj) {
-	      for (var _name in obj) {
-	        if (this[_name]) this[_name].set(obj[_name]);else this[_name] = obs(obj[_name]);
-	      }
-	    }
-	  }]);
+	  /**
+	   * Bulk update of a datascope.
+	   */
 	
-	  return ObjectObservable;
+	  ObservableObject.prototype.update = function update(o) {};
+	
+	  return ObservableObject;
 	})();
 	
-	exports.ObjectObservable = ObjectObservable;
-	
-	function obs(o) {
-	  var cls = null;
-	
-	  if (o instanceof Array) {
-	    cls = ArrayObservable;
-	  } else if (o instanceof Date) {
-	    cls = Observable;
-	  } else if (typeof o === 'object') {
-	    cls = ObjectObservable;
-	  } else {
-	    cls = Observable;
-	  }
-	
-	  return new cls(o);
-	}
+	exports.ObservableObject = ObservableObject;
 	
 	function o() {
 	  for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
@@ -629,10 +617,105 @@
 	  var fn = args[args.length - 1];
 	  var deps = [];
 	
-	  for (var i = 0; i < l - 2; i++) {}
+	  for (var i = 0; i < l - 2; i++) {
+	    // compute the dependencies here.
+	  }
 	}
+
+
+/***/ },
+/* 3 */
+/***/ function(module, exports) {
+
+	/**
+	 * Core middleware for el.
+	 */
 	
-	// compute the dependencies here.
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	var Attr = function Attr(obj, cpt) {};
+	
+	exports.Attr = Attr;
+	var If = function If(obs, cpt) {};
+	
+	exports.If = If;
+	/**
+	 * Decorate the component so that
+	 * @param  {[type]} 2        [description]
+	 * @param  {[type]} function Repeat(obs,   trackBy, repeater [description]
+	 * @return {[type]}          [description]
+	 */
+	var Repeat = function Repeat(obs, trackBy, repeater) {};
+	
+	exports.Repeat = Repeat;
+	var On = function On(evt_name, cbk) {
+	
+	  return function (component) {
+	    // Est-ce qu'on peut se unsubscribe ?
+	    component.$node.addEventListener(evt_name, cbk);
+	    return node;
+	  };
+	};
+	
+	exports.On = On;
+	
+	var Middleware = (function () {
+	  function Middleware() {
+	    _classCallCheck(this, Middleware);
+	
+	    this.$component = null;
+	  }
+	
+	  Middleware.prototype.setComponent = function setComponent(cmp) {
+	    this.$component = cmp;
+	  };
+	
+	  return Middleware;
+	})();
+	
+	exports.Middleware = Middleware;
+	
+	var Bind = (function (_Middleware) {
+	  _inherits(Bind, _Middleware);
+	
+	  function Bind() {
+	    _classCallCheck(this, Bind);
+	
+	    _Middleware.apply(this, arguments);
+	  }
+	
+	  // export function Bind(observable, opts) {
+	  //
+	  //   return function (component) {
+	  //     // FIXME specify a bind interface.
+	  //     if (component.bind) {
+	  //
+	  //     } else {
+	  //       // We're calling bind on a classic HTML node.
+	  //       let node = component.$node;
+	  //
+	  //       if (node.tagName === 'input') {
+	  //
+	  //       } else if (node.tagName === 'textarea') {
+	  //
+	  //       }
+	  //     }
+	  //   };
+	  //
+	  // };
+	  return Bind;
+	})(Middleware);
+	
+	exports.Bind = Bind;
+
 
 /***/ }
 /******/ ]);

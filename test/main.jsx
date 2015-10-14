@@ -3,19 +3,23 @@ window.assert = function (b) {
 }
 
 import {elt, Component} from 'elt/component';
+import {Bind} from 'elt/middleware';
 
 class MyApp extends Component {
+
   initial_data = {
     txt: 'some text.',
+    txt2: 'other text...',
     obj: {a: 1, b: 2}
   };
 
   props = ['txt'];
 
   view(data) {
+    console.dir(data.txt2);
     return <div>
       <span class='pouet'>test ! {data.txt} {false} {new Date()}</span><br/>
-      <span>{data.obj} <input type='text' name='toto' value={data.txt}/></span>
+      <span>{data.obj} <input type='text' name='toto' value={data.txt2}/></span>
     </div>;
   }
 }
