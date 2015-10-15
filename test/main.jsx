@@ -25,6 +25,26 @@ class It extends Component {
 
 class MyApp extends Component {
 
+  // NOTE Array peut recevoir
+  //    - un iterable, auquel cas la génération ne se fait qu'une fois sans observation.
+  //      un .map serait mieux si on peut rajouter des arrays dans les children comme des boeufs.
+  //    - un observable avec juste une valeur iterable, au quel cas
+  //      on tente de faire du tracking à la track-by.
+  //    - un array-observable fait pour overrider les push(), length et compagnie, et qui dissuade
+  //      d'utiliser l'accesseur [].
+  //
+  //
+  // Quid de get/set des objets pour les rendre observables à la Vue ?
+  // Il y a quand même quelque chose d'assez agréable là dedans...
+
+  // FIXME peut être changer son nom pour quelque chose de moins ambigu.
+  //    en tout cas revoir sa fonction ; il n'est pas forcément souhaitable
+  //    que data se convertisse en un objet complètement observable.
+  //    (peut être faire des observables simples même lorsqu'on file des objets ?)
+  //    (et vérifier à l'observation qu'on a un observable et que donc ça ne sert à
+  //    rien d'observer l'observable....)
+  //
+  //    Bref, la façon de passer des datas à un component doit être revue impérativement.
   initial_data = {
     txt: 'some text.',
     pass: 'hunter2',
@@ -35,12 +55,12 @@ class MyApp extends Component {
     radio: 'one',
     search: '',
     number: 4,
-    date: new Date, // not working.
-    month: new Date, // not working.
-    week: new Date, // not working.
-    time: new Date,
+    date: '2015-10-21',
+    month: '2015-10',
+    week: '2015-W24',
+    time: '12:23',
     datetime: new Date, // not working.
-    datetime_local: new Date, // not working.
+    datetime_local: '2015-10-06T12:23',
     tel: '+33652738543',
     email: 'admin@domain.com',
     color: '#f45947'
@@ -48,6 +68,8 @@ class MyApp extends Component {
 
   props = ['txt'];
 
+  // Il faudra probablement rajouter un ', content' en argument et lui donner la liste des children.
+  // NOTE : il faudra donc revoir la mécanique d'appendChild et d'insertion des nodes dans le DOM.
   view(data) {
     return <div>
       <h2>HTML5 Input Tests</h2>
@@ -88,4 +110,6 @@ class MyApp extends Component {
 
 }
 
+// FIXME il faut bien revoir le unmount pour que les nodes et attributs qui font des observations
+//    les arrêtent. On risque d'avoir pas mal de memory leaks sinon.
 <MyApp txt='pouet !'/>.mount(document.body);

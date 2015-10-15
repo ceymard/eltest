@@ -54,9 +54,9 @@
 	
 	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	
-	var _eltObservable = __webpack_require__(2);
+	var _eltObservable = __webpack_require__(1);
 	
-	var _eltComponent = __webpack_require__(1);
+	var _eltComponent = __webpack_require__(2);
 	
 	var _eltMiddleware = __webpack_require__(3);
 	
@@ -120,12 +120,12 @@
 	      radio: 'one',
 	      search: '',
 	      number: 4,
-	      date: new Date(), // not working.
-	      month: new Date(), // not working.
-	      week: new Date(), // not working.
-	      time: new Date(),
+	      date: '2015-10-21',
+	      month: '2015-10',
+	      week: '2015-W24',
+	      time: '12:23',
 	      datetime: new Date(), // not working.
-	      datetime_local: new Date(), // not working.
+	      datetime_local: '2015-10-06T12:23',
 	      tel: '+33652738543',
 	      email: 'admin@domain.com',
 	      color: '#f45947'
@@ -133,8 +133,14 @@
 	    this.props = ['txt'];
 	  }
 	
+	  // FIXME il faut bien revoir le unmount pour que les nodes et attributs qui font des observations
+	  //    les arrêtent. On risque d'avoir pas mal de memory leaks sinon.
+	
 	  _createClass(MyApp, [{
 	    key: 'view',
+	
+	    // Il faudra probablement rajouter un ', content' en argument et lui donner la liste des children.
+	    // NOTE : il faudra donc revoir la mécanique d'appendChild et d'insertion des nodes dans le DOM.
 	    value: function view(data) {
 	      return (0, _eltComponent.elt)(
 	        'div',
@@ -236,337 +242,30 @@
 	})(_eltComponent.Component);
 	
 	(0, _eltComponent.elt)(MyApp, { txt: 'pouet !' }).mount(document.body);
+	
+	// NOTE Array peut recevoir
+	//    - un iterable, auquel cas la génération ne se fait qu'une fois sans observation.
+	//      un .map serait mieux si on peut rajouter des arrays dans les children comme des boeufs.
+	//    - un observable avec juste une valeur iterable, au quel cas
+	//      on tente de faire du tracking à la track-by.
+	//    - un array-observable fait pour overrider les push(), length et compagnie, et qui dissuade
+	//      d'utiliser l'accesseur [].
+	//
+	//
+	// Quid de get/set des objets pour les rendre observables à la Vue ?
+	// Il y a quand même quelque chose d'assez agréable là dedans...
+
+	// FIXME peut être changer son nom pour quelque chose de moins ambigu.
+	//    en tout cas revoir sa fonction ; il n'est pas forcément souhaitable
+	//    que data se convertisse en un objet complètement observable.
+	//    (peut être faire des observables simples même lorsqu'on file des objets ?)
+	//    (et vérifier à l'observation qu'on a un observable et que donc ça ne sert à
+	//    rien d'observer l'observable....)
+	//
+	//    Bref, la façon de passer des datas à un component doit être revue impérativement.
 
 /***/ },
 /* 1 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, '__esModule', {
-	  value: true
-	});
-	exports.elt = elt;
-	
-	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
-	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-	
-	var _observable = __webpack_require__(2);
-	
-	var Component = (function () {
-	
-	  // Should the view be built whenever a component is instanciated ?
-	
-	  function Component() {
-	    var _this = this;
-	
-	    var attrs = arguments[0] === undefined ? {} : arguments[0];
-	
-	    _classCallCheck(this, Component);
-	
-	    this.$node = null;
-	    this.$parentNode = null;
-	    this.$content = null;
-	    this.$parentComponent = null;
-	    this.$middleware = [];
-	    this.props = [];
-	    this.initial_data = {};
-	
-	    this.setContentInsertion = function (component) {
-	      return {
-	        // Bound function because we want to access the this.
-	        view: function view(data, next) {
-	          var elt = next(data);
-	          _this.$content = elt.$node;
-	          return elt;
-	        }
-	      };
-	    };
-	
-	    attrs = attrs || {};
-	
-	    // Handle middleware.
-	    if (attrs.$$) {
-	      this.$middleware = attrs.$$ instanceof Array ? attrs.$$ : [attrs.$$];
-	      delete attrs.$$;
-	    }
-	
-	    this.attrs = attrs;
-	  }
-	
-	  Component.prototype.compile = function compile() {
-	    var additional_data = arguments[0] === undefined ? {} : arguments[0];
-	
-	    var data = Object.assign({}, this.initial_data, additional_data);
-	    this.data = new _observable.ObservableObject(data);
-	
-	    var attrs = this.attrs;
-	
-	    for (var _iterator = this.props, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
-	      var _ref;
-	
-	      if (_isArray) {
-	        if (_i >= _iterator.length) break;
-	        _ref = _iterator[_i++];
-	      } else {
-	        _i = _iterator.next();
-	        if (_i.done) break;
-	        _ref = _i.value;
-	      }
-	
-	      var p = _ref;
-	
-	      if (p in attrs) {
-	        this.data[p] = attrs[p];
-	      }
-	    }
-	
-	    this.$view = this.view(this.data);
-	    this.$view.setParentComponent(this);
-	    this.$content = this.$node = this.$view.$node;
-	
-	    for (var _iterator2 = this.$middleware, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
-	      var _ref2;
-	
-	      if (_isArray2) {
-	        if (_i2 >= _iterator2.length) break;
-	        _ref2 = _iterator2[_i2++];
-	      } else {
-	        _i2 = _iterator2.next();
-	        if (_i2.done) break;
-	        _ref2 = _i2.value;
-	      }
-	
-	      var m = _ref2;
-	
-	      var res = new m(this);
-	      // should store them...
-	    }
-	  };
-	
-	  Component.prototype.view = function view() {
-	    return null;
-	  };
-	
-	  Component.prototype.setParentComponent = function setParentComponent(component) {
-	    this.$parentComponent = component;
-	  };
-	
-	  Component.prototype.getParentComponent = function getParentComponent(cls) {
-	    var p = this.$parentComponent;
-	    if (!p) return null;
-	
-	    if (p instanceof cls) return p;
-	    return p.getParentComponent(cls);
-	  };
-	
-	  /**
-	   *
-	   * This method is bound to
-	   * @param  {String|Number|Boolean|Node|Component} child
-	   *         The child we want to add to the current component.
-	   */
-	
-	  Component.prototype.appendChild = function appendChild(child) {
-	    // content is a Node.
-	    var content = this.$content || this.$node;
-	
-	    if (typeof child === 'string' || child instanceof Number || child instanceof Boolean) {
-	      // Simple text node.
-	      // Note
-	      content.appendChild(document.createTextNode(child.toString()));
-	    } else if (child instanceof _observable.Observable) {
-	      (function () {
-	        // A text node that will be bound
-	        // child = new TextObservable(child);
-	        var txt = document.createTextNode('null');
-	        // FIXME should do some stringify.
-	        child.onchange(function (val) {
-	          if (typeof val === 'object') val = JSON.stringify(val);
-	          txt.textContent = val.toString();
-	        });
-	        content.appendChild(txt);
-	      })();
-	    } else if (child instanceof Node) {
-	      content.appendChild(c);
-	    } else if (child instanceof Component) {
-	      // Get its HTML node.
-	      child.setParentComponent(elt);
-	      content.appendChild(child.$node);
-	    } else {
-	      // When all else fail, then try to at least create a JSON-ificated version of it.
-	      // FIXME probably not.
-	      content.appendChild(document.createTextNode(JSON.stringify(child)));
-	    }
-	  };
-	
-	  Component.prototype.unmount = function unmount() {
-	    // remove from the parent DOM node if it is mounted
-	    // destroy the data, observables and such.
-	    if (!this.$parentNode) throw new Error('this node was not mounted');
-	    this.$parentNode.removeChild(this.$node);
-	    this.$parentNode = null;
-	    this.data.destroy();
-	  };
-	
-	  Component.prototype.mount = function mount(domnode) {
-	    if (this.$parentNode) {
-	      // maybe we could just let the node be mounted elsewhere ?
-	      throw new Error('already mounted !');
-	    }
-	    this.$parentNode = domnode;
-	    domnode.appendChild(this.$node);
-	  };
-	
-	  return Component;
-	})();
-	
-	exports.Component = Component;
-	
-	/**
-	 *
-	 */
-	
-	var TextObservable = (function (_Component) {
-	  function TextObservable(obs) {
-	    _classCallCheck(this, TextObservable);
-	
-	    _Component.call(this);
-	    this.$node = document.createTextNode('');
-	
-	    // Whenever the observed change, just set its value to its string content.
-	    // obs.onchange((v) => this.$node.textContent = v.toString());
-	    // obs.onchange((v) => this.$node.textContent);
-	  }
-	
-	  _inherits(TextObservable, _Component);
-	
-	  return TextObservable;
-	})(Component);
-	
-	exports.TextObservable = TextObservable;
-	
-	/**
-	 *
-	 */
-	
-	var HtmlComponent = (function (_Component2) {
-	  function HtmlComponent(elt) {
-	    var attrs = arguments[1] === undefined ? {} : arguments[1];
-	
-	    _classCallCheck(this, HtmlComponent);
-	
-	    _Component2.call(this, attrs);
-	
-	    assert('string' === typeof elt);
-	
-	    this.elt = elt;
-	  }
-	
-	  _inherits(HtmlComponent, _Component2);
-	
-	  /**
-	   * Create the html node.
-	   */
-	
-	  HtmlComponent.prototype.view = function view(data) {
-	    var _this2 = this;
-	
-	    var e = document.createElement(this.elt);
-	
-	    var _loop = function (attribute_name) {
-	      var att = _this2.attrs[attribute_name];
-	
-	      if (att instanceof _observable.Observable) {
-	        att.onchange(function (val) {
-	          if (typeof val === 'object') e.setAttribute(attribute_name, JSON.stringify(val));else e.setAttribute(attribute_name, val);
-	        });
-	      } else {
-	        e.setAttribute(attribute_name, att);
-	      }
-	    };
-	
-	    for (var attribute_name in this.attrs) {
-	      _loop(attribute_name);
-	    }
-	
-	    // empty setParentComponent as this one shall never have one.
-	    return { $node: e, setParentComponent: function setParentComponent() {} };
-	  };
-	
-	  return HtmlComponent;
-	})(Component);
-	
-	exports.HtmlComponent = HtmlComponent;
-	
-	/**
-	 *
-	 * NOTE During the element instanciation, it is expected
-	 * 		that the children are already instanciated components.
-	 *
-	 * @param  {Component|String} elt
-	 *         A Component or the name of the html element to create.
-	 * @param  {Object} attrs
-	 *         The attributes that go onto the node. They can hold Observable
-	 *         objects.
-	 * @param  {Component|Node|Any} ...children
-	 *         List of children to append to this component.
-	 * @return {Component}
-	 *         The resulting instanciated component, with a $node property
-	 *         ready to be inserted into the DOM.
-	 */
-	
-	function elt(elt, attrs) {
-	  for (var _len = arguments.length, children = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
-	    children[_key - 2] = arguments[_key];
-	  }
-	
-	  // assert(elt instanceof Component || typeof elt === 'string');
-	
-	  if (typeof elt === 'string') {
-	    // Create a simple Html node.
-	    elt = new HtmlComponent(elt, attrs);
-	  } else if (elt instanceof Function) {
-	
-	    // Create a component, as a constructor was given to us as first argument.
-	    elt = new elt(attrs, children);
-	  }
-	
-	  elt.compile();
-	
-	  // For each child, construct their node.
-	  for (var _iterator3 = children, _isArray3 = Array.isArray(_iterator3), _i3 = 0, _iterator3 = _isArray3 ? _iterator3 : _iterator3[Symbol.iterator]();;) {
-	    var _ref3;
-	
-	    if (_isArray3) {
-	      if (_i3 >= _iterator3.length) break;
-	      _ref3 = _iterator3[_i3++];
-	    } else {
-	      _i3 = _iterator3.next();
-	      if (_i3.done) break;
-	      _ref3 = _i3.value;
-	    }
-	
-	    var _c = _ref3;
-	
-	    if (typeof _c === 'undefined') continue;
-	    elt.appendChild(_c);
-	  }
-	
-	  // By this point, elt.$node is ready for insertion into the DOM.
-	  return elt;
-	}
-	
-	// List of properties set in the attributes that will be pulled into
-	// data as .props
-
-	// The data spec for this component. Note that it can be overriden
-	// (although rarely, usually by Repeat)
-
-
-/***/ },
-/* 2 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -814,6 +513,333 @@
 
 
 /***/ },
+/* 2 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, '__esModule', {
+	  value: true
+	});
+	exports.elt = elt;
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+	
+	var _observable = __webpack_require__(1);
+	
+	var Component = (function () {
+	
+	  // Should the view be built whenever a component is instanciated ?
+	
+	  function Component() {
+	    var _this = this;
+	
+	    var attrs = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+	
+	    _classCallCheck(this, Component);
+	
+	    this.$node = null;
+	    this.$parentNode = null;
+	    this.$content = null;
+	    this.$parentComponent = null;
+	    this.$middleware = [];
+	    this.props = [];
+	    this.initial_data = {};
+	
+	    this.setContentInsertion = function (component) {
+	      return {
+	        // Bound function because we want to access the this.
+	        view: function view(data, next) {
+	          var elt = next(data);
+	          _this.$content = elt.$node;
+	          return elt;
+	        }
+	      };
+	    };
+	
+	    attrs = attrs || {};
+	
+	    // Handle middleware.
+	    if (attrs.$$) {
+	      this.$middleware = attrs.$$ instanceof Array ? attrs.$$ : [attrs.$$];
+	      delete attrs.$$;
+	    }
+	
+	    this.attrs = attrs;
+	  }
+	
+	  /**
+	   *
+	   */
+	
+	  Component.prototype.compile = function compile() {
+	    var additional_data = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+	
+	    var data = Object.assign({}, this.initial_data, additional_data);
+	    this.data = new _observable.ObservableObject(data);
+	
+	    var attrs = this.attrs;
+	
+	    for (var _iterator = this.props, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
+	      var _ref;
+	
+	      if (_isArray) {
+	        if (_i >= _iterator.length) break;
+	        _ref = _iterator[_i++];
+	      } else {
+	        _i = _iterator.next();
+	        if (_i.done) break;
+	        _ref = _i.value;
+	      }
+	
+	      var p = _ref;
+	
+	      if (p in attrs) {
+	        this.data[p] = attrs[p];
+	      }
+	    }
+	
+	    this.$view = this.view(this.data);
+	    this.$view.setParentComponent(this);
+	    this.$content = this.$node = this.$view.$node;
+	
+	    for (var _iterator2 = this.$middleware, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
+	      var _ref2;
+	
+	      if (_isArray2) {
+	        if (_i2 >= _iterator2.length) break;
+	        _ref2 = _iterator2[_i2++];
+	      } else {
+	        _i2 = _iterator2.next();
+	        if (_i2.done) break;
+	        _ref2 = _i2.value;
+	      }
+	
+	      var m = _ref2;
+	
+	      var res = new m(this);
+	      // should store them...
+	    }
+	  };
+	
+	  Component.prototype.view = function view() {
+	    return null;
+	  };
+	
+	  Component.prototype.setParentComponent = function setParentComponent(component) {
+	    this.$parentComponent = component;
+	  };
+	
+	  Component.prototype.getParentComponent = function getParentComponent(cls) {
+	    var p = this.$parentComponent;
+	    if (!p) return null;
+	
+	    if (p instanceof cls) return p;
+	    return p.getParentComponent(cls);
+	  };
+	
+	  /**
+	   *
+	   * This method is bound to
+	   * @param  {String|Number|Boolean|Node|Component} child
+	   *         The child we want to add to the current component.
+	   */
+	
+	  Component.prototype.appendChild = function appendChild(child) {
+	    // content is a Node.
+	    var content = this.$content || this.$node;
+	
+	    if (typeof child === 'string' || child instanceof Number || child instanceof Boolean) {
+	      // Simple text node.
+	      // Note
+	      content.appendChild(document.createTextNode(child.toString()));
+	    } else if (child instanceof _observable.Observable) {
+	      (function () {
+	        // A text node that will be bound
+	        // child = new TextObservable(child);
+	        var txt = document.createTextNode('null');
+	        // FIXME should do some stringify.
+	        child.onchange(function (val) {
+	          if (typeof val === 'object') val = JSON.stringify(val);
+	          txt.textContent = val.toString();
+	        });
+	        content.appendChild(txt);
+	      })();
+	    } else if (child instanceof Node) {
+	      content.appendChild(c);
+	    } else if (child instanceof Component) {
+	      // Get its HTML node.
+	      child.setParentComponent(elt);
+	      content.appendChild(child.$node);
+	    } else {
+	      // When all else fail, then try to at least create a JSON-ificated version of it.
+	      // FIXME probably not.
+	      content.appendChild(document.createTextNode(JSON.stringify(child)));
+	    }
+	  };
+	
+	  Component.prototype.unmount = function unmount() {
+	    // remove from the parent DOM node if it is mounted
+	    // destroy the data, observables and such.
+	    if (!this.$parentNode) throw new Error('this node was not mounted');
+	    this.$parentNode.removeChild(this.$node);
+	    this.$parentNode = null;
+	    this.data.destroy();
+	  };
+	
+	  Component.prototype.mount = function mount(domnode) {
+	    if (this.$parentNode) {
+	      // maybe we could just let the node be mounted elsewhere ?
+	      throw new Error('already mounted !');
+	    }
+	    this.$parentNode = domnode;
+	    domnode.appendChild(this.$node);
+	  };
+	
+	  return Component;
+	})();
+	
+	exports.Component = Component;
+	
+	var TextObservable = (function (_Component) {
+	  _inherits(TextObservable, _Component);
+	
+	  function TextObservable(obs) {
+	    _classCallCheck(this, TextObservable);
+	
+	    _Component.call(this);
+	    this.$node = document.createTextNode('');
+	
+	    // Whenever the observed change, just set its value to its string content.
+	    // obs.onchange((v) => this.$node.textContent = v.toString());
+	    // obs.onchange((v) => this.$node.textContent);
+	  }
+	
+	  /**
+	   *
+	   */
+	  return TextObservable;
+	})(Component);
+	
+	exports.TextObservable = TextObservable;
+	
+	var HtmlComponent = (function (_Component2) {
+	  _inherits(HtmlComponent, _Component2);
+	
+	  function HtmlComponent(elt) {
+	    var attrs = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+	
+	    _classCallCheck(this, HtmlComponent);
+	
+	    _Component2.call(this, attrs);
+	
+	    assert('string' === typeof elt);
+	
+	    this.elt = elt;
+	  }
+	
+	  /**
+	   *
+	   * NOTE During the element instanciation, it is expected
+	   * 		that the children are already instanciated components.
+	   *
+	   * @param  {Component|String} elt
+	   *         A Component or the name of the html element to create.
+	   * @param  {Object} attrs
+	   *         The attributes that go onto the node. They can hold Observable
+	   *         objects.
+	   * @param  {Component|Node|Any} ...children
+	   *         List of children to append to this component.
+	   * @return {Component}
+	   *         The resulting instanciated component, with a $node property
+	   *         ready to be inserted into the DOM.
+	   */
+	
+	  /**
+	   * Create the html node.
+	   */
+	
+	  HtmlComponent.prototype.view = function view(data) {
+	    var _this2 = this;
+	
+	    var e = document.createElement(this.elt);
+	
+	    var _loop = function (attribute_name) {
+	      var att = _this2.attrs[attribute_name];
+	
+	      if (att instanceof _observable.Observable) {
+	        att.onchange(function (val) {
+	          if (typeof val === 'object') e.setAttribute(attribute_name, JSON.stringify(val));else e.setAttribute(attribute_name, val);
+	        });
+	      } else {
+	        e.setAttribute(attribute_name, att);
+	      }
+	    };
+	
+	    for (var attribute_name in this.attrs) {
+	      _loop(attribute_name);
+	    }
+	
+	    // empty setParentComponent as this one shall never have one.
+	    return { $node: e, setParentComponent: function setParentComponent() {} };
+	  };
+	
+	  return HtmlComponent;
+	})(Component);
+	
+	exports.HtmlComponent = HtmlComponent;
+	
+	function elt(elt, attrs) {
+	  for (var _len = arguments.length, children = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+	    children[_key - 2] = arguments[_key];
+	  }
+	
+	  // assert(elt instanceof Component || typeof elt === 'string');
+	
+	  if (typeof elt === 'string') {
+	    // Create a simple Html node.
+	    elt = new HtmlComponent(elt, attrs);
+	  } else if (elt instanceof Function) {
+	
+	    // Create a component, as a constructor was given to us as first argument.
+	    elt = new elt(attrs, children);
+	  }
+	
+	  elt.compile();
+	
+	  // For each child, construct their node.
+	  for (var _iterator3 = children, _isArray3 = Array.isArray(_iterator3), _i3 = 0, _iterator3 = _isArray3 ? _iterator3 : _iterator3[Symbol.iterator]();;) {
+	    var _ref3;
+	
+	    if (_isArray3) {
+	      if (_i3 >= _iterator3.length) break;
+	      _ref3 = _iterator3[_i3++];
+	    } else {
+	      _i3 = _iterator3.next();
+	      if (_i3.done) break;
+	      _ref3 = _i3.value;
+	    }
+	
+	    var _c = _ref3;
+	
+	    if (typeof _c === 'undefined') continue;
+	    elt.appendChild(_c);
+	  }
+	
+	  // By this point, elt.$node is ready for insertion into the DOM.
+	  return elt;
+	}
+	
+	// List of properties set in the attributes that will be pulled into
+	// data as .props
+
+	// The data spec for this component. Note that it can be overriden
+	// (although rarely, usually by Repeat)
+
+
+/***/ },
 /* 3 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -880,7 +906,7 @@
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 	
-	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	
 	var _middleware = __webpack_require__(3);
 	
@@ -893,6 +919,8 @@
 	};
 	
 	var BindMiddleware = (function (_Middleware) {
+	  _inherits(BindMiddleware, _Middleware);
+	
 	  function BindMiddleware(component, observable, opts) {
 	    _classCallCheck(this, BindMiddleware);
 	
@@ -920,6 +948,11 @@
 	      switch (type) {
 	        case 'color':
 	        case 'range':
+	        case 'date':
+	        case 'datetime':
+	        case 'week':
+	        case 'month':
+	        case 'datetime-local':
 	          observable.onchange(function (val) {
 	            return node.value = val;
 	          });
@@ -942,16 +975,17 @@
 	        case 'number':
 	        case 'text':
 	        case 'password':
+	        case 'search':
 	        default:
 	          observable.onchange(function (val) {
 	            return node.value = val;
 	          });
 	          node.addEventListener('keyup', cbk);
+	          node.addEventListener('input', cbk);
+	          node.addEventListener('change', cbk);
 	      }
 	    } else if (tag === 'textarea') {} else if (tag === 'select') {}
 	  }
-	
-	  _inherits(BindMiddleware, _Middleware);
 	
 	  return BindMiddleware;
 	})(_middleware.Middleware);
@@ -969,12 +1003,12 @@
 	
 	function If(obs, cpt) {
 	
-	  return function (component) {};
+	  return function (component) {
+	    // ...
+	  };
 	};
 	
 	module.exports = If;
-	
-	// ...
 
 
 /***/ },
@@ -985,44 +1019,40 @@
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 	
-	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	
-	var _component = __webpack_require__(1);
+	var _component = __webpack_require__(2);
 	
 	var _middleware = __webpack_require__(3);
 	
 	var RepeaterComponent = (function (_Component) {
+	  _inherits(RepeaterComponent, _Component);
+	
 	  function RepeaterComponent() {
 	    _classCallCheck(this, RepeaterComponent);
 	
-	    if (_Component != null) {
-	      _Component.apply(this, arguments);
-	    }
+	    _Component.apply(this, arguments);
 	  }
 	
-	  _inherits(RepeaterComponent, _Component);
-	
+	  /**
+	   * Decorate the component so that
+	   */
 	  return RepeaterComponent;
 	})(_component.Component);
 	
-	/**
-	 * Decorate the component so that
-	 */
 	function Repeat(obs, opts, repeater) {
 	
 	  return function (component) {};
 	};
 	
 	var RepeatMiddleware = (function (_Middleware) {
+	  _inherits(RepeatMiddleware, _Middleware);
+	
 	  function RepeatMiddleware() {
 	    _classCallCheck(this, RepeatMiddleware);
 	
-	    if (_Middleware != null) {
-	      _Middleware.apply(this, arguments);
-	    }
+	    _Middleware.apply(this, arguments);
 	  }
-	
-	  _inherits(RepeatMiddleware, _Middleware);
 	
 	  return RepeatMiddleware;
 	})(_middleware.Middleware);
