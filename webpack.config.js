@@ -1,3 +1,4 @@
+var webpack = require('webpack');
 var path = require('path');
 
 module.exports = {
@@ -24,5 +25,8 @@ module.exports = {
         jsxPragma: 'elt'
       }}
     ]
-  }
+  },
+  // plugins: [
+  //   new webpack.optimize.UglifyJsPlugin({minimize: true})
+  // ]
 }

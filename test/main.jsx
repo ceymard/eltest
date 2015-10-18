@@ -1,3 +1,19 @@
+/**
+ * First, we call elt() that setups all the components.
+ * At this point, the component hierarchy has been established,
+ * and right after that, middlewares and components can actually
+ * start to talk to each other. However, the DOM has not been initialized at all.
+ * This is when view() is called, to ready the component hierachy.
+ * Also, this is when parent is set up.
+ *
+ * Then we want to mount the component somewhere. This is where the nodes
+ * are created, and all the associations with the observables are done.
+ * When link() is done executing (and mount()), the DOM is in place with all events
+ * at the ready.
+ * NOTE there are two way to add a child ; either by appending, or by inserting before
+ * a node (case of if or repeat, so that they know what to destroy ? maybe handling children
+ * ought to be enough ?)
+ */
 
 window.assert = function (b) {
   if (!b) console.error(new Error('assert failed'));
@@ -6,6 +22,7 @@ window.assert = function (b) {
 import {o} from 'elt/observable';
 import {elt, Component} from 'elt/component';
 import {Bind, Click} from 'elt/middleware';
+import fastclick from 'fastclick';
 
 class It extends Component {
   props = ['obs', 'type'];
@@ -18,8 +35,13 @@ class It extends Component {
     return <li>
         <span class='title'>{data.type || 'text'}</span> <code class='result'>{data.obs}</code>
         {content.length ? content : <input type={data.type} $$={Bind(data.obs)}/>}
-        <button $$={Click(this.unmount.bind(this))}>X</button>
+        <a href='javascript://' $$={Click(this.bye.bind(this))}>X</a>
       </li>
+  }
+
+  bye() {
+    console.log('????');
+    this.unmount();
   }
 }
 
@@ -32,20 +54,8 @@ class MyApp extends Component {
   //      on tente de faire du tracking à la track-by.
   //    - un array-observable fait pour overrider les push(), length et compagnie, et qui dissuade
   //      d'utiliser l'accesseur [].
-  //
-  //
-  // Quid de get/set des objets pour les rendre observables à la Vue ?
-  // Il y a quand même quelque chose d'assez agréable là dedans...
 
-  // FIXME peut être changer son nom pour quelque chose de moins ambigu.
-  //    en tout cas revoir sa fonction ; il n'est pas forcément souhaitable
-  //    que data se convertisse en un objet complètement observable.
-  //    (peut être faire des observables simples même lorsqu'on file des objets ?)
-  //    (et vérifier à l'observation qu'on a un observable et que donc ça ne sert à
-  //    rien d'observer l'observable....)
-  //
-  //    Bref, la façon de passer des datas à un component doit être revue impérativement.
-  initial_data = {
+  data_defaults = {
     txt: 'some text.',
     pass: 'hunter2',
     obj: {a: 1, b: 2},
@@ -53,24 +63,25 @@ class MyApp extends Component {
     val: 200,
     bool: true,
     radio: 'one',
-    search: '',
+    search: 'search...',
     number: 4,
     date: '2015-10-21',
     month: '2015-10',
     week: '2015-W24',
     time: '12:23',
-    datetime: new Date, // not working.
     datetime_local: '2015-10-06T12:23',
     tel: '+33652738543',
     email: 'admin@domain.com',
-    color: '#f45947'
+    color: '#f45947',
+    array: ['a', 'b', 'c']
   };
 
   props = ['txt'];
 
   // Il faudra probablement rajouter un ', content' en argument et lui donner la liste des children.
   // NOTE : il faudra donc revoir la mécanique d'appendChild et d'insertion des nodes dans le DOM.
-  view(data) {
+  view(data, content) {
+
     return <div>
       <h2>HTML5 Input Tests</h2>
       <ul>
@@ -99,14 +110,28 @@ class MyApp extends Component {
       <span>{data.obj}</span><br/>
       <span>{data.txt} !!!!</span><br/>
       <span>{data.bool} !!!!</span><br/>
+
+      <h2>Array Test</h2>
+
     </div>;
   }
   // <span><input type='text' name='toto2' $$={Bind(data.obs.a)}/> {data.obs.a} !!!!</span><br/>
+  //
+  // <Repeat data={data.array} view={(data) => {
+  //
+  // }}></Repeat>
 
-  test() {
+  // <%Repeat key, elt in meindata>
+  //  <content></content>
+  // <%/Repeat>
+  // =>
+  // <Repeat $$scope={(key, elt) => <content></content>} ???
+
+  test(event) {
     this.data.txt = 'was clicked';
   }
 
 }
 
+fastclick.attach(document.body);
 <MyApp txt='pouet !'/>.mount(document.body);
