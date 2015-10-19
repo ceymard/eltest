@@ -20,9 +20,8 @@ window.assert = function (b) {
 }
 
 import {o} from 'elt/observable';
-import {elt, Component} from 'elt/component';
+import {elt, Component, Repeat} from 'elt/component';
 import {Bind, Click} from 'elt/middleware';
-import fastclick from 'fastclick';
 
 class It extends Component {
   props = ['obs', 'type'];
@@ -112,6 +111,7 @@ class MyApp extends Component {
       <span>{data.bool} !!!!</span><br/>
 
       <h2>Array Test</h2>
+      <Repeat data={data.array} view={(data) => <span>{data.$index} : {data.$value}</span>}/>
 
     </div>;
   }
@@ -129,9 +129,9 @@ class MyApp extends Component {
 
   test(event) {
     this.data.txt = 'was clicked';
+    this.data.array = ['A', 'B', 'C'];
   }
 
 }
 
-fastclick.attach(document.body);
 <MyApp txt='pouet !'/>.mount(document.body);
