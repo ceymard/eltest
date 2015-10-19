@@ -10,9 +10,6 @@
  * are created, and all the associations with the observables are done.
  * When link() is done executing (and mount()), the DOM is in place with all events
  * at the ready.
- * NOTE there are two way to add a child ; either by appending, or by inserting before
- * a node (case of if or repeat, so that they know what to destroy ? maybe handling children
- * ought to be enough ?)
  */
 
 window.assert = function (b) {
@@ -111,25 +108,17 @@ class MyApp extends Component {
       <span>{data.bool} !!!!</span><br/>
 
       <h2>Array Test</h2>
-      <Repeat data={data.array} view={(data) => <span>{data.$index} : {data.$value}</span>}/>
+      <Repeat data={data.array} view={(data) => <span>{data.$index} : {data.$value}{!data.$last ? ', ' : ''}</span>}/>
 
     </div>;
   }
-  // <span><input type='text' name='toto2' $$={Bind(data.obs.a)}/> {data.obs.a} !!!!</span><br/>
-  //
-  // <Repeat data={data.array} view={(data) => {
-  //
-  // }}></Repeat>
-
-  // <%Repeat key, elt in meindata>
-  //  <content></content>
-  // <%/Repeat>
-  // =>
-  // <Repeat $$scope={(key, elt) => <content></content>} ???
 
   test(event) {
     this.data.txt = 'was clicked';
-    this.data.array = ['A', 'B', 'C'];
+
+    let arr = this.data.array.get();
+    arr = arr.concat([String.fromCharCode(arr[0].charCodeAt(0) + arr.length)]);
+    this.data.array = arr;
   }
 
 }

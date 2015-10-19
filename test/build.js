@@ -56,9 +56,6 @@
 	 * are created, and all the associations with the observables are done.
 	 * When link() is done executing (and mount()), the DOM is in place with all events
 	 * at the ready.
-	 * NOTE there are two way to add a child ; either by appending, or by inserting before
-	 * a node (case of if or repeat, so that they know what to destroy ? maybe handling children
-	 * ought to be enough ?)
 	 */
 	
 	'use strict';
@@ -261,29 +258,20 @@
 	              null,
 	              data.$index,
 	              ' : ',
-	              data.$value
+	              data.$value,
+	              !data.$last ? ', ' : ''
 	            );
 	          } })
 	      );
 	    }
-	
-	    // <span><input type='text' name='toto2' $$={Bind(data.obs.a)}/> {data.obs.a} !!!!</span><br/>
-	    //
-	    // <Repeat data={data.array} view={(data) => {
-	    //
-	    // }}></Repeat>
-	
-	    // <%Repeat key, elt in meindata>
-	    //  <content></content>
-	    // <%/Repeat>
-	    // =>
-	    // <Repeat $$scope={(key, elt) => <content></content>} ???
-	
 	  }, {
 	    key: 'test',
 	    value: function test(event) {
 	      this.data.txt = 'was clicked';
-	      this.data.array = ['A', 'B', 'C'];
+	
+	      var arr = this.data.array.get();
+	      arr = arr.concat([String.fromCharCode(arr[0].charCodeAt(0) + arr.length)]);
+	      this.data.array = arr;
 	    }
 	  }]);
 	
@@ -400,6 +388,34 @@
 	  Observable.prototype.destroy = function destroy() {
 	    this._destroyed = true;
 	    this._listeners = [];
+	  };
+	
+	  /**
+	   * Optionally two-way transformer.
+	   * @param  {function} fnset The function that transforms the value.
+	   * @param  {function} fnget The function that gets the value back into the current observable.
+	   * @return {[type]}       [description]
+	   */
+	
+	  Observable.prototype.transform = function transform(fnset, fnget) {
+	    var _this3 = this;
+	
+	    var o = new Observable(fnset(this._value));
+	
+	    var unset = this.onchange(function (val) {
+	      return o.set(fn(val));
+	    });
+	    var unset_get = null;
+	    if (fnget) {
+	      unset_get = o.onchange(function (val) {
+	        return _this3.set(fnget(val));
+	      });
+	    }
+	
+	    // Unset both of them.
+	    return function () {
+	      unset();unset_get && unset_get();
+	    };
 	  };
 	
 	  return Observable;
@@ -988,8 +1004,8 @@
 	  };
 	
 	  Component.prototype.unmount = function unmount() {
-	    this.child.unmount();
 	    _BaseComponent2.prototype.unmount.call(this);
+	    this.child.unmount();
 	  };
 	
 	  return Component;
@@ -1044,15 +1060,34 @@
 	    var view = this.attrs.view;
 	    var len = arr.length;
 	    var trackby = this.attrs['track-by'];
+	    var watched = [];
+	
+	    for (var _iterator5 = this.watched_children, _isArray5 = Array.isArray(_iterator5), _i5 = 0, _iterator5 = _isArray5 ? _iterator5 : _iterator5[Symbol.iterator]();;) {
+	      var _ref5;
+	
+	      if (_isArray5) {
+	        if (_i5 >= _iterator5.length) break;
+	        _ref5 = _iterator5[_i5++];
+	      } else {
+	        _i5 = _iterator5.next();
+	        if (_i5.done) break;
+	        _ref5 = _i5.value;
+	      }
+	
+	      var e = _ref5;
+	
+	      // FIXME track-by.
+	      e.unmount();
+	    }
 	
 	    // Remove all elements.
 	    // NOTE should add a track-by 'round here.
-	    while (iter !== end) {
-	      // FIXME should unmount children !!!!
-	      var next = iter.nextSibling;
-	      parent.removeChild(iter);
-	      iter = next;
-	    }
+	    // while (iter !== end) {
+	    //   // FIXME should unmount children !!!!
+	    //   let next = iter.nextSibling;
+	    //   parent.removeChild(iter);
+	    //   iter = next;
+	    // }
 	
 	    for (var i = 0; i < len; i++) {
 	      var e = view({
@@ -1066,8 +1101,11 @@
 	      // Whatever happens, the view *must* give us some HTML components.
 	      assert(e instanceof BaseComponent);
 	
+	      watched.push(e);
 	      e.mount(parent, end);
 	    }
+	
+	    this.watched_children = watched;
 	  };
 	
 	  Repeat.prototype.mount = function mount(parent, before) {
