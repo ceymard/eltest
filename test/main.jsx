@@ -17,66 +17,61 @@ window.assert = function (b) {
 }
 
 import {o} from 'elt/observable';
-import {elt, Component, Repeat} from 'elt/component';
-import {Bind, Click} from 'elt/middleware';
+import {elt} from 'elt/node';
+import {Component} from 'elt/controller';
+import {Bind} from 'elt/decorators/bind';
+import {Click} from 'elt/decorators/click';
 
 class It extends Component {
-  props = ['obs', 'type'];
 
-  view(data, content) {
-    if (!data.obs)
-      data.obs = o(null);
-    data.type = data.type || 'text';
+  view(attrs, children) {
+    let data = {
+      obs: attrs.obs || o(null),
+      type: attrs.type || 'text'
+    };
+
+    if (!attrs.obs)
+      attrs.obs = o(null);
+    attrs.type = attrs.type || 'text';
 
     return <li>
         <span class='title'>{data.type || 'text'}</span> <code class='result'>{data.obs}</code>
-        {content.length ? content : <input type={data.type} $$={Bind(data.obs)}/>}
+        {children.length ? children : <input type={data.type} $$={Bind(data.obs)}/>}
         <a href='javascript://' $$={Click(this.bye.bind(this))}>X</a>
       </li>
   }
 
   bye() {
-    console.log('????');
-    this.unmount();
+    this.node.unmount();
   }
 }
 
 class MyApp extends Component {
 
-  // NOTE Array peut recevoir
-  //    - un iterable, auquel cas la génération ne se fait qu'une fois sans observation.
-  //      un .map serait mieux si on peut rajouter des arrays dans les children comme des boeufs.
-  //    - un observable avec juste une valeur iterable, au quel cas
-  //      on tente de faire du tracking à la track-by.
-  //    - un array-observable fait pour overrider les push(), length et compagnie, et qui dissuade
-  //      d'utiliser l'accesseur [].
-
-  data_defaults = {
-    txt: 'some text.',
-    pass: 'hunter2',
-    obj: {a: 1, b: 2},
-    // obs: o({a: 5, b: 6}),
-    val: 200,
-    bool: true,
-    radio: 'one',
-    search: 'search...',
-    number: 4,
-    date: '2015-10-21',
-    month: '2015-10',
-    week: '2015-W24',
-    time: '12:23',
-    datetime_local: '2015-10-06T12:23',
-    tel: '+33652738543',
-    email: 'admin@domain.com',
-    color: '#f45947',
-    array: ['a', 'b', 'c']
-  };
-
-  props = ['txt'];
-
-  // Il faudra probablement rajouter un ', content' en argument et lui donner la liste des children.
+  // Il faudra probablement rajouter un ', children' en argument et lui donner la liste des children.
   // NOTE : il faudra donc revoir la mécanique d'appendChild et d'insertion des nodes dans le DOM.
-  view(data, content) {
+  view(attrs, children) {
+
+    let data = this.data = o.all({
+      txt: 'some text.',
+      pass: 'hunter2',
+      obj: {a: 1, b: 2},
+      val: 200,
+      bool: true,
+      radio: 'one',
+      search: 'search...',
+      number: 4,
+      date: '2015-10-21',
+      month: '2015-10',
+      week: '2015-W24',
+      time: '12:23',
+      datetime_local: '2015-10-06T12:23',
+      tel: '+33652738543',
+      email: 'admin@domain.com',
+      color: '#f45947',
+      array: ['a', 'b', 'c'],
+      txt: attrs.txt || 'some text'
+    });
 
     return <div>
       <h2>HTML5 Input Tests</h2>
@@ -108,17 +103,17 @@ class MyApp extends Component {
       <span>{data.bool} !!!!</span><br/>
 
       <h2>Array Test</h2>
-      <Repeat data={data.array} view={(data) => <span>{data.$index} : {data.$value}{!data.$last ? ', ' : ''}</span>}/>
 
     </div>;
   }
+  // <Repeat data={data.array} view={(data) => <span>{data.$index} : {data.$value}{!data.$last ? ', ' : ''}</span>}/>
 
   test(event) {
-    this.data.txt = 'was clicked';
+    this.data.txt.set('was clicked');
 
     let arr = this.data.array.get();
     arr = arr.concat([String.fromCharCode(arr[0].charCodeAt(0) + arr.length)]);
-    this.data.array = arr;
+    this.data.array.set(arr);
   }
 
 }
