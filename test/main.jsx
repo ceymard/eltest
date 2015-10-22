@@ -12,6 +12,22 @@
  * at the ready.
  */
 
+/**
+ * 	TODO
+ *
+ * 	- class, style, tabindex and other 'common' properties should be forwarded from
+ * 		Components to their html node.
+ * 	- a nice router.
+ * 	- Material
+ * 		- icons
+ * 		- checkbox
+ * 		- radio
+ * 		- switch
+ * 		- toolbar
+ * 		- dialog
+ * 		- select !
+ */
+
 window.assert = function (b) {
   if (!b) console.error(new Error('assert failed'));
 }
@@ -22,6 +38,7 @@ import {Component, Repeat} from 'elt/controller';
 import {bind, click} from 'elt/decorators';
 
 import {Button} from 'elt/material/button';
+import {Toolbar} from 'elt/material/toolbar';
 
 class It extends Component {
 
@@ -54,7 +71,6 @@ class MyApp extends Component {
   view(attrs, children) {
 
     let data = this.data = o.all({
-      txt: 'some text.',
       pass: 'hunter2',
       obj: {a: 1, b: 2},
       val: 200,
@@ -75,6 +91,15 @@ class MyApp extends Component {
     });
 
     return <div>
+      <Toolbar>
+        <h3>Examples</h3>
+      </Toolbar>
+      <h2>Form example</h2>
+      <Button $$={click(this.test.bind(this))}>Click me !</Button>
+      <Button class='primary' raised $$={click(this.test.bind(this))}>Raised</Button>
+      <Button disabled raised $$={click(this.test.bind(this))}>Disabled</Button>
+      <br/>
+
       <h2>Array Test</h2>
       <Repeat data={data.array} view={(data) => <span>{data.$index} : {data.$value}{!data.$last ? ', ' : ''}</span>}/>
 
@@ -101,7 +126,6 @@ class MyApp extends Component {
       </ul>
 
       <h2>Some Random Listeners</h2>
-      <Button class='raised' $$={click(this.test.bind(this))}>Click me !</Button><br/>
       <span>{data.obj}</span><br/>
       <span>{data.txt} !!!!</span><br/>
       <span>{data.bool} !!!!</span><br/>

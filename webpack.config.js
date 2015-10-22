@@ -13,6 +13,7 @@ module.exports = {
     sourceMapFilename: "[file].map"
   },
   resolveLoader: { root: path.join(__dirname, "node_modules") },
+  resolve: {extensions: ["", ".webpack.js", ".web.js", ".js", ".jsx"]},
   module: {
     preLoaders: [
       {
@@ -31,6 +32,6 @@ module.exports = {
   },
   plugins: [
     new ExtractTextPlugin('style.css'),
-    new webpack.optimize.UglifyJsPlugin({minimize: true}),
+    // new webpack.optimize.UglifyJsPlugin({minimize: true}),
   ]
 }
