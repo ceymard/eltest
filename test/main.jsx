@@ -18,9 +18,10 @@ window.assert = function (b) {
 
 import {o} from 'elt/observable';
 import {elt} from 'elt/node';
-import {Component} from 'elt/controller';
-import {Bind} from 'elt/decorators/bind';
-import {Click} from 'elt/decorators/click';
+import {Component, Repeat} from 'elt/controller';
+import {bind, click} from 'elt/decorators';
+
+import {Button} from 'elt/material/button';
 
 class It extends Component {
 
@@ -36,8 +37,8 @@ class It extends Component {
 
     return <li>
         <span class='title'>{data.type || 'text'}</span> <code class='result'>{data.obs}</code>
-        {children.length ? children : <input type={data.type} $$={Bind(data.obs)}/>}
-        <a href='javascript://' $$={Click(this.bye.bind(this))}>X</a>
+        {children.length ? children : <input type={data.type} $$={bind(data.obs)}/>}
+        <a href='javascript://' $$={click(this.bye.bind(this))}>X</a>
       </li>
   }
 
@@ -74,6 +75,9 @@ class MyApp extends Component {
     });
 
     return <div>
+      <h2>Array Test</h2>
+      <Repeat data={data.array} view={(data) => <span>{data.$index} : {data.$value}{!data.$last ? ', ' : ''}</span>}/>
+
       <h2>HTML5 Input Tests</h2>
       <ul>
         <It type='text' obs={data.txt}></It>
@@ -84,8 +88,8 @@ class MyApp extends Component {
         <It type='number' obs={data.number}></It>
         <It type='tel' obs={data.tel}></It>
         <It type='radio' obs={data.radio}>
-          <label><input type='radio' value='one' $$={Bind(data.radio)}/>One</label>
-          <label><input type='radio' value='two' $$={Bind(data.radio)}/>Two</label>
+          <label><input type='radio' value='one' $$={bind(data.radio)}/>One</label>
+          <label><input type='radio' value='two' $$={bind(data.radio)}/>Two</label>
         </It>
         <It type='color' obs={data.color}></It>
         <It type='range' obs={data.val}></It>
@@ -97,16 +101,14 @@ class MyApp extends Component {
       </ul>
 
       <h2>Some Random Listeners</h2>
-      <span class='pouet'>{false} {new Date()}</span> <button $$={Click(this.test.bind(this))}>Click me !</button><br/>
+      <Button class='raised' $$={click(this.test.bind(this))}>Click me !</Button><br/>
       <span>{data.obj}</span><br/>
       <span>{data.txt} !!!!</span><br/>
       <span>{data.bool} !!!!</span><br/>
 
-      <h2>Array Test</h2>
 
     </div>;
   }
-  // <Repeat data={data.array} view={(data) => <span>{data.$index} : {data.$value}{!data.$last ? ', ' : ''}</span>}/>
 
   test(event) {
     this.data.txt.set('was clicked');

@@ -1,4 +1,5 @@
 var webpack = require('webpack');
+var ExtractTextPlugin = require('extract-text-webpack-plugin');
 var path = require('path');
 
 module.exports = {
@@ -20,13 +21,16 @@ module.exports = {
       }
     ],
     loaders: [
+      {test: /\.css$/, loader: ExtractTextPlugin.extract('css')},
+      {test: /\.styl$/, loader: ExtractTextPlugin.extract('css!stylus')},
       {test: /\.jsx$/, exclude: /node_modules/, loader: 'babel', query: {
         stage: 0,
         jsxPragma: 'elt'
-      }}
+      }},
     ]
   },
-  // plugins: [
-  //   new webpack.optimize.UglifyJsPlugin({minimize: true})
-  // ]
+  plugins: [
+    new ExtractTextPlugin('style.css'),
+    new webpack.optimize.UglifyJsPlugin({minimize: true}),
+  ]
 }
