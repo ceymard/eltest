@@ -19,11 +19,7 @@
  * 		Components to their html node.
  * 	- a nice router.
  * 	- Material
- * 		- icons
- * 		- checkbox
- * 		- radio
  * 		- switch
- * 		- toolbar
  * 		- dialog
  * 		- select !
  */
@@ -35,10 +31,10 @@ window.assert = function (b) {
 import {o} from 'elt/observable';
 import {elt} from 'elt/node';
 import {Component, Repeat} from 'elt/controller';
-import {bind, click} from 'elt/decorators';
+import {bind} from 'elt/decorators';
+import {click} from 'elt/touch';
 
-import {Button} from 'elt/material/button';
-import {Toolbar} from 'elt/material/toolbar';
+import {Button, Checkbox, Icon, Radio, Toolbar, Input} from 'elt-material';
 
 class It extends Component {
 
@@ -55,8 +51,8 @@ class It extends Component {
     return <li>
         <span class='title'>{data.type || 'text'}</span> <code class='result'>{data.obs}</code>
         {children.length ? children : <input type={data.type} $$={bind(data.obs)}/>}
-        <a href='javascript://' $$={click(this.bye.bind(this))}>X</a>
-      </li>
+      </li>;
+      // <a href='javascript://' $$={click(this.bye.bind(this))}>X</a>
   }
 
   bye() {
@@ -92,13 +88,23 @@ class MyApp extends Component {
 
     return <div>
       <Toolbar>
+        <Icon name='menu'/>
+        <Icon name='check_box_outline_blank'/>
         <h3>Examples</h3>
       </Toolbar>
       <h2>Form example</h2>
-      <Button $$={click(this.test.bind(this))}>Click me !</Button>
-      <Button class='primary' raised $$={click(this.test.bind(this))}>Raised</Button>
-      <Button disabled raised $$={click(this.test.bind(this))}>Disabled</Button>
+      <Button click={this.test.bind(this)}>Click me !</Button>
+      <Button class='primary' raised click={this.test.bind(this)}>Raised</Button>
+      <Button disabled raised click={this.test.bind(this)}>Disabled</Button>
       <br/>
+      <Checkbox model={data.bool} title='Click me'/>
+      <Checkbox disabled model={data.bool} title='Click me'/>
+      <br/>
+      <Radio value='string' model={data.radio} title='Test 1'/>
+      <Radio value={2} model={data.radio} title='Test 2'/>
+      <Radio value={{a: 1, b: 2}} model={data.radio} title='Test Object'/>
+      <br/>
+      <Input model={data.txt}/>
 
       <h2>Array Test</h2>
       <Repeat data={data.array} view={(data) => <span>{data.$index} : {data.$value}{!data.$last ? ', ' : ''}</span>}/>
