@@ -1,18 +1,4 @@
 /**
- * First, we call elt() that setups all the components.
- * At this point, the component hierarchy has been established,
- * and right after that, middlewares and components can actually
- * start to talk to each other. However, the DOM has not been initialized at all.
- * This is when view() is called, to ready the component hierachy.
- * Also, this is when parent is set up.
- *
- * Then we want to mount the component somewhere. This is where the nodes
- * are created, and all the associations with the observables are done.
- * When link() is done executing (and mount()), the DOM is in place with all events
- * at the ready.
- */
-
-/**
  * 	TODO
  *
  * 	- class, style, tabindex and other 'common' properties should be forwarded from
@@ -105,6 +91,8 @@ class MyApp extends Component {
       <Radio value={{a: 1, b: 2}} model={data.radio} title='Test Object'/>
       <br/>
       <Input model={data.txt}/>
+      <Input model={data.txt.transform((v) => v.toUpperCase(), (v) => v.toLowerCase())}/>
+
 
       <h2>Array Test</h2>
       <Repeat data={data.array} view={(data) => <span>{data.$index} : {data.$value}{!data.$last ? ', ' : ''}</span>}/>
@@ -146,6 +134,26 @@ class MyApp extends Component {
     let arr = this.data.array.get();
     arr = arr.concat([String.fromCharCode(arr[0].charCodeAt(0) + arr.length)]);
     this.data.array.set(arr);
+  }
+
+  async testModal() {
+    let res = await dialog.modal('Do you want to ?', 'Yes', 'No');
+  }
+
+  async testDialog() {
+    let res = await dialog.show(
+      (dlg) =>
+      <Dialog>
+        <h3>My Super Title</h3>
+        <p>I want to do stuff, I do</p>
+        <p>But it's hard...</p>
+        <Dialog.Buttons stacked>
+          <Button click={dlg.close}>No</Button>
+          <Button click={dlg.resolve(40)}>Yes</Button>
+        </Dialog.Buttons>
+      </Dialog>);
+
+    )
   }
 
 }
