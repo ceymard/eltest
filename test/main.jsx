@@ -14,13 +14,15 @@ window.assert = function (b) {
   if (!b) console.error(new Error('assert failed'));
 }
 
+require("babel-core/browser-polyfill"); // ????
+
 import {o} from 'elt/observable';
 import {elt} from 'elt/node';
 import {Component, Repeat} from 'elt/controller';
 import {bind} from 'elt/decorators';
 import {click} from 'elt/touch';
 
-import {Button, Checkbox, Icon, Radio, Toolbar, Input} from 'elt-material';
+import {dialog, Button, Checkbox, Icon, Radio, Toolbar, Input} from 'elt-material';
 
 class It extends Component {
 
@@ -80,7 +82,7 @@ class MyApp extends Component {
       </Toolbar>
       <h2>Form example</h2>
       <Button click={this.test.bind(this)}>Click me !</Button>
-      <Button class='primary' raised click={this.test.bind(this)}>Raised</Button>
+      <Button class='primary' raised click={this.testModal.bind(this)}>Modal Dialog</Button>
       <Button disabled raised click={this.test.bind(this)}>Disabled</Button>
       <br/>
       <Checkbox model={data.bool} title='Click me'/>
@@ -137,10 +139,25 @@ class MyApp extends Component {
   }
 
   async testModal() {
-    let res = await dialog.modal('Do you want to ?', 'Yes', 'No');
+    try {
+      let res = await dialog.modal(
+        'Big Warning !',
+        'This action is going to do tons of stuff you wouldnt really want to happen.\n Really proceed ?',
+        'Yes',
+        'No');
+      console.log(res);
+    } catch (e) {
+      console.error(e);
+    }
   }
 
   async testDialog() {
+    class BetterDialog extends Dialog {
+      view(attrs, children) {
+
+      }
+    }
+
     let res = await dialog.show(
       (dlg) =>
       <Dialog>
@@ -152,8 +169,6 @@ class MyApp extends Component {
           <Button click={dlg.resolve(40)}>Yes</Button>
         </Dialog.Buttons>
       </Dialog>);
-
-    )
   }
 
 }
