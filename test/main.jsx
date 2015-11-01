@@ -58,16 +58,14 @@ class MyAppCtrl extends Controller {
   }
 
   async testModal() {
-    try {
-      let res = await dialog.modal(
-        'Big Warning !',
-        'This action is going to do tons of stuff you wouldnt really want to happen.\n Really proceed ?',
-        'Yes',
-        'No');
-      console.log(res);
-    } catch (e) {
-      console.error(e);
-    }
+    let res = await dialog.modal({
+      title: 'Big Warning !',
+      text: 'This action is going to do tons of stuff you wouldnt really want to happen.\n Really proceed ?',
+      agree: 'Yes',
+      disagree: 'No',
+      disableScrolling: true
+    });
+    console.log(res);
   }
 
   async testDialog() {
