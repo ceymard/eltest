@@ -18,124 +18,43 @@ require("babel-core/browser-polyfill"); // ????
 
 import {o} from 'elt/observable';
 import {elt} from 'elt/node';
-import {Component, Repeat} from 'elt/controller';
-import {bind} from 'elt/decorators';
+import {Controller} from 'elt/controller';
+import {bind, ctrl} from 'elt/decorators';
 import {click} from 'elt/touch';
 
 import {dialog, Button, Checkbox, Icon, Radio, Toolbar, Input} from 'elt-material';
 
-class It extends Component {
 
-  view(attrs, children) {
-    let data = {
-      obs: attrs.obs || o(null),
-      type: attrs.type || 'text'
-    };
+class MyAppCtrl extends Controller {
 
-    if (!attrs.obs)
-      attrs.obs = o(null);
-    attrs.type = attrs.type || 'text';
+  constructor(attrs) {
+    super();
 
-    return <li>
-        <span class='title'>{data.type || 'text'}</span> <code class='result'>{data.obs}</code>
-        {children.length ? children : <input type={data.type} $$={bind(data.obs)}/>}
-      </li>;
-      // <a href='javascript://' $$={click(this.bye.bind(this))}>X</a>
-  }
-
-  bye() {
-    this.node.unmount();
-  }
-}
-
-class MyApp extends Component {
-
-  // Il faudra probablement rajouter un ', children' en argument et lui donner la liste des children.
-  // NOTE : il faudra donc revoir la mécanique d'appendChild et d'insertion des nodes dans le DOM.
-  view(attrs, children) {
-
-    let data = this.data = o.all({
-      pass: 'hunter2',
-      obj: {a: 1, b: 2},
-      val: 200,
-      bool: true,
-      radio: 'one',
-      search: 'search...',
-      number: 4,
-      date: '2015-10-21',
-      month: '2015-10',
-      week: '2015-W24',
-      time: '12:23',
-      datetime_local: '2015-10-06T12:23',
-      tel: '+33652738543',
-      email: 'admin@domain.com',
-      color: '#f45947',
-      array: ['a', 'b', 'c'],
-      txt: attrs.txt || 'some text'
-    });
-
-    return <div>
-      <Toolbar>
-        <Icon name='menu'/>
-        <Icon name='check_box_outline_blank'/>
-        <h3>Examples</h3>
-      </Toolbar>
-      <h2>Form example</h2>
-      <Button click={this.test.bind(this)}>Click me !</Button>
-      <Button class='primary' raised click={this.testModal.bind(this)}>Modal Dialog</Button>
-      <Button disabled raised click={this.test.bind(this)}>Disabled</Button>
-      <br/>
-      <Checkbox model={data.bool} title='Click me'/>
-      <Checkbox disabled model={data.bool} title='Click me'/>
-      <br/>
-      <Radio value='string' model={data.radio} title='Test 1'/>
-      <Radio value={2} model={data.radio} title='Test 2'/>
-      <Radio value={{a: 1, b: 2}} model={data.radio} title='Test Object'/>
-      <br/>
-      <Input model={data.txt}/>
-      <Input model={data.txt.transform((v) => v.toUpperCase(), (v) => v.toLowerCase())}/>
-
-
-      <h2>Array Test</h2>
-      <Repeat data={data.array} view={(data) => <span>{data.$index} : {data.$value}{!data.$last ? ', ' : ''}</span>}/>
-
-      <h2>HTML5 Input Tests</h2>
-      <ul>
-        <It type='text' obs={data.txt}></It>
-        <It type='password' obs={data.pass}></It>
-        <It type='checkbox' obs={data.bool}></It>
-        <It type='search' obs={data.search}></It>
-        <It type='email' obs={data.email}></It>
-        <It type='number' obs={data.number}></It>
-        <It type='tel' obs={data.tel}></It>
-        <It type='radio' obs={data.radio}>
-          <label><input type='radio' value='one' $$={bind(data.radio)}/>One</label>
-          <label><input type='radio' value='two' $$={bind(data.radio)}/>Two</label>
-        </It>
-        <It type='color' obs={data.color}></It>
-        <It type='range' obs={data.val}></It>
-        <It type='date' obs={data.date}></It>
-        <It type='month' obs={data.month}></It>
-        <It type='week' obs={data.week}></It>
-        <It type='time' obs={data.time}></It>
-        <It type='datetime-local' obs={data.datetime_local}></It>
-      </ul>
-
-      <h2>Some Random Listeners</h2>
-      <span>{data.obj}</span><br/>
-      <span>{data.txt} !!!!</span><br/>
-      <span>{data.bool} !!!!</span><br/>
-
-
-    </div>;
+    this.pass = o('hunter2');
+    this.obj = o({a: 1, b: 2});
+    this.val = o(200);
+    this.bool = o(true);
+    this.radio = o('one');
+    this.search = o('search...');
+    this.number = o(4);
+    this.date = o('2015-10-21');
+    this.month = o('2015-10');
+    this.week = o('2015-W24');
+    this.time = o('12:23');
+    this.datetime_local = o('2015-10-06T12:23');
+    this.tel = o('+33652738543');
+    this.email = o('admin@domain.com');
+    this.color = o('#f45947');
+    this.array = o(['a', 'b', 'c']);
+    this.txt = o(attrs.txt || 'some text');
   }
 
   test(event) {
-    this.data.txt.set('was clicked');
+    this.txt.set('was clicked');
 
-    let arr = this.data.array.get();
+    let arr = this.array.get();
     arr = arr.concat([String.fromCharCode(arr[0].charCodeAt(0) + arr.length)]);
-    this.data.array.set(arr);
+    this.array.set(arr);
   }
 
   async testModal() {
@@ -152,25 +71,84 @@ class MyApp extends Component {
   }
 
   async testDialog() {
-    class BetterDialog extends Dialog {
-      view(attrs, children) {
 
-      }
-    }
-
-    let res = await dialog.show(
-      (dlg) =>
-      <Dialog>
-        <h3>My Super Title</h3>
-        <p>I want to do stuff, I do</p>
-        <p>But it's hard...</p>
-        <Dialog.Buttons stacked>
-          <Button click={dlg.close}>No</Button>
-          <Button click={dlg.resolve(40)}>Yes</Button>
-        </Dialog.Buttons>
-      </Dialog>);
   }
 
+}
+
+
+function It(attrs, children) {
+
+  let data = {
+    obs: attrs.obs || o(null),
+    type: attrs.type || 'text'
+  };
+
+  if (!attrs.obs)
+    attrs.obs = o(null);
+  attrs.type = attrs.type || 'text';
+
+  return <li>
+      <span class='title'>{data.type || 'text'}</span> <code class='result'>{data.obs}</code>
+      {children.length ? children : <input type={data.type} $$={bind(data.obs)}/>}
+    </li>;
+}
+
+
+function MyApp(attrs, children) {
+  let app = new MyAppCtrl(attrs);
+
+  return <div $$={ctrl(app)}>
+    <Toolbar>
+      <Icon name='menu'/>
+      <Icon name='check_box_outline_blank'/>
+      <h3>Examples</h3>
+    </Toolbar>
+    <h2>Form example</h2>
+    <Button click={(ev) => app.test()}>Click me !</Button>
+    <Button class='primary' raised click={() => app.testModal()}>Modal Dialog</Button>
+    <Button disabled raised click={() => app.test()}>Disabled</Button>
+    <br/>
+    <Checkbox model={app.bool} title='Click me'/>
+    <Checkbox disabled model={app.bool} title='Click me'/>
+    <br/>
+    <Radio value='string' model={app.radio} title='Test 1'/>
+    <Radio value={2} model={app.radio} title='Test 2'/>
+    <Radio value={{a: 1, b: 2}} model={app.radio} title='Test Object'/>
+    <br/>
+    <Input model={app.txt}/>
+    <Input model={app.txt.transform((v) => v.toUpperCase(), (v) => v.toLowerCase())}/>
+
+
+    <h2>Array Test</h2>
+
+    <h2>HTML5 Input Tests</h2>
+    <ul>
+      <It type='text' obs={app.txt}></It>
+      <It type='password' obs={app.pass}></It>
+      <It type='checkbox' obs={app.bool}></It>
+      <It type='search' obs={app.search}></It>
+      <It type='email' obs={app.email}></It>
+      <It type='number' obs={app.number}></It>
+      <It type='tel' obs={app.tel}></It>
+      <It type='radio' obs={app.radio}>
+        <label><input type='radio' value='one' $$={bind(app.radio)}/>One</label>
+        <label><input type='radio' value='two' $$={bind(app.radio)}/>Two</label>
+      </It>
+      <It type='color' obs={app.color}></It>
+      <It type='range' obs={app.val}></It>
+      <It type='date' obs={app.date}></It>
+      <It type='month' obs={app.month}></It>
+      <It type='week' obs={app.week}></It>
+      <It type='time' obs={app.time}></It>
+      <It type='datetime-local' obs={app.datetime_local}></It>
+    </ul>
+
+    <h2>Some Random Listeners</h2>
+    <span>{app.obj}</span><br/>
+    <span>{app.txt} !!!!</span><br/>
+    <span>{app.bool} !!!!</span><br/>
+  </div>;
 }
 
 <MyApp txt='pouet !'/>.mount(document.body);
