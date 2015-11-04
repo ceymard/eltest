@@ -16,13 +16,9 @@ window.assert = function (b) {
 
 require("babel-core/browser-polyfill"); // ????
 
-import {o} from 'elt/observable';
-import {elt} from 'elt/node';
-import {Controller} from 'elt/controller';
-import {bind, ctrl} from 'elt/decorators';
-import {click} from 'elt/touch';
-
-import {dialog, Button, Checkbox, Icon, Radio, Toolbar, Input} from 'elt-material';
+import {o, c, Controller, click, bind, ctrl} from 'carbyne';
+import {dialog, Button, Checkbox, Icon, Radio, Toolbar, Input, Content} from 'carbyne-material';
+import 'carbyne-material/typography.styl';
 
 
 class MyAppCtrl extends Controller {
@@ -98,55 +94,58 @@ function MyApp(attrs, children) {
 
   return <div $$={ctrl(app)}>
     <Toolbar>
-      <Icon name='menu'/>
-      <Icon name='check_box_outline_blank'/>
+      <Button icon='menu'/>
       <h3>Examples</h3>
     </Toolbar>
-    <h2>Form example</h2>
-    <Button click={(ev) => app.test()}>Click me !</Button>
-    <Button class='primary' raised click={() => app.testModal()}>Modal Dialog</Button>
-    <Button disabled raised click={() => app.test()}>Disabled</Button>
-    <br/>
-    <Checkbox model={app.bool} title='Click me'/>
-    <Checkbox disabled model={app.bool} title='Click me'/>
-    <br/>
-    <Radio value='string' model={app.radio} title='Test 1'/>
-    <Radio value={2} model={app.radio} title='Test 2'/>
-    <Radio value={{a: 1, b: 2}} model={app.radio} title='Test Object'/>
-    <br/>
-    <Input model={app.txt}/>
-    <Input model={app.txt.transform((v) => v.toUpperCase(), (v) => v.toLowerCase())}/>
+    <Content>
+      <h2>Form example</h2>
+      <Button click={(ev) => app.test()}>Click me !</Button>
+      <Button class='primary' raised click={() => app.testModal()}>Modal Dialog</Button>
+      <Button disabled raised click={() => app.test()}>Disabled</Button>
+      <br/>
+      <Checkbox model={app.bool} title='Click me'/>
+      <Checkbox disabled model={app.bool} title='Click me'/>
+      <br/>
+      <Radio value='string' model={app.radio} title='Test 1'/>
+      <Radio value={2} model={app.radio} title='Test 2'/>
+      <Radio value={{a: 1, b: 2}} model={app.radio} title='Test Object'/>
+      <br/>
+      <Input model={app.txt}/>
+      <Input model={app.txt.transform((v) => v.toUpperCase(), (v) => v.toLowerCase())}/>
 
 
-    <h2>Array Test</h2>
+      <h2>Array Test</h2>
 
-    <h2>HTML5 Input Tests</h2>
-    <ul>
-      <It type='text' obs={app.txt}></It>
-      <It type='password' obs={app.pass}></It>
-      <It type='checkbox' obs={app.bool}></It>
-      <It type='search' obs={app.search}></It>
-      <It type='email' obs={app.email}></It>
-      <It type='number' obs={app.number}></It>
-      <It type='tel' obs={app.tel}></It>
-      <It type='radio' obs={app.radio}>
-        <label><input type='radio' value='one' $$={bind(app.radio)}/>One</label>
-        <label><input type='radio' value='two' $$={bind(app.radio)}/>Two</label>
-      </It>
-      <It type='color' obs={app.color}></It>
-      <It type='range' obs={app.val}></It>
-      <It type='date' obs={app.date}></It>
-      <It type='month' obs={app.month}></It>
-      <It type='week' obs={app.week}></It>
-      <It type='time' obs={app.time}></It>
-      <It type='datetime-local' obs={app.datetime_local}></It>
-    </ul>
+      <h2>HTML5 Input Tests</h2>
+      <ul>
+        <It type='text' obs={app.txt}></It>
+        <It type='password' obs={app.pass}></It>
+        <It type='checkbox' obs={app.bool}></It>
+        <It type='search' obs={app.search}></It>
+        <It type='email' obs={app.email}></It>
+        <It type='number' obs={app.number}></It>
+        <It type='tel' obs={app.tel}></It>
+        <It type='radio' obs={app.radio}>
+          <label><input type='radio' value='one' $$={bind(app.radio)}/>One</label>
+          <label><input type='radio' value='two' $$={bind(app.radio)}/>Two</label>
+        </It>
+        <It type='color' obs={app.color}></It>
+        <It type='range' obs={app.val}></It>
+        <It type='date' obs={app.date}></It>
+        <It type='month' obs={app.month}></It>
+        <It type='week' obs={app.week}></It>
+        <It type='time' obs={app.time}></It>
+        <It type='datetime-local' obs={app.datetime_local}></It>
+      </ul>
 
-    <h2>Some Random Listeners</h2>
-    <span>{app.obj}</span><br/>
-    <span>{app.txt} !!!!</span><br/>
-    <span>{app.bool} !!!!</span><br/>
+      <h2>Some Random Listeners</h2>
+      <span>{app.obj}</span><br/>
+      <span>{app.txt} !!!!</span><br/>
+      <span>{app.bool} !!!!</span><br/>
+    </Content>
   </div>;
 }
 
-<MyApp txt='pouet !'/>.mount(document.body);
+window.onload = () => {
+  <MyApp txt='pouet !'/>.mount(document.body);
+}

@@ -26,7 +26,7 @@ module.exports = {
       {test: /\.styl$/, loader: ExtractTextPlugin.extract('css!stylus')},
       {test: /\.jsx$/, exclude: /node_modules/, loader: 'babel', query: {
         stage: 0,
-        jsxPragma: 'elt'
+        jsxPragma: 'c'
       }},
     ]
   },
