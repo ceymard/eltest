@@ -107,8 +107,9 @@ function MyApp(attrs, children) {
       <Checkbox disabled model={app.bool} title='Click me'/>
       <br/>
       <Radio value='string' model={app.radio} title='Test 1'/>
-      <Radio value={2} model={app.radio} title='Test 2'/>
+      <Radio value={<a href='https://www.google.com' target='_blank'>google.com</a>} model={app.radio} title='Test Link'/>
       <Radio value={{a: 1, b: 2}} model={app.radio} title='Test Object'/>
+      <Radio value={[<a href='https://www.reddit.com' target='_blank'>reddit.com</a>, ' is nice']} model={app.radio} title='Test Array'/>
       <br/>
       <Input model={app.txt}/>
       <Input model={app.txt.transform((v) => v.toUpperCase(), (v) => v.toLowerCase())}/>
