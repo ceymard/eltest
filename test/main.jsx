@@ -14,8 +14,6 @@ window.assert = function (b) {
   if (!b) console.error(new Error('assert failed'));
 }
 
-require("babel-core/browser-polyfill"); // ????
-
 import {o, c, Controller, click, bind, ctrl} from 'carbyne';
 import {dialog, Button, Checkbox, Icon, Radio, Toolbar, Input, Content} from 'carbyne-material';
 import 'carbyne-material/typography.styl';
@@ -53,18 +51,19 @@ class MyAppCtrl extends Controller {
     this.array.set(arr);
   }
 
-  async testModal() {
-    let res = await dialog.modal({
+  testModal() {
+    dialog.modal({
       title: 'Big Warning !',
       text: 'This action is going to do tons of stuff you wouldnt really want to happen.\n Really proceed ?',
       agree: 'Yes',
       disagree: 'No',
       disableScrolling: true
+    }).then((res) => {
+      console.log(res);
     });
-    console.log(res);
   }
 
-  async testDialog() {
+  testDialog() {
 
   }
 
@@ -107,9 +106,11 @@ function MyApp(attrs, children) {
       <Checkbox disabled model={app.bool} title='Click me'/>
       <br/>
       <Radio value='string' model={app.radio} title='Test 1'/>
-      <Radio value={<a href='https://www.google.com' target='_blank'>google.com</a>} model={app.radio} title='Test Link'/>
+      <Radio value={() => <a href='https://www.google.com' target='_blank'>google.com</a>} model={app.radio} title='Test Link'/>
       <Radio value={{a: 1, b: 2}} model={app.radio} title='Test Object'/>
-      <Radio value={[<a href='https://www.reddit.com' target='_blank'>reddit.com</a>, ' is nice']} model={app.radio} title='Test Array'/>
+      <Radio value={() => [<a href='https://www.reddit.com' target='_blank'>reddit.com</a>, ' is nice']} model={app.radio} title='Test Array'/>
+      <br/>
+      {app.radio}
       <br/>
       <Input model={app.txt}/>
       <Input model={app.txt.transform((v) => v.toUpperCase(), (v) => v.toLowerCase())}/>
