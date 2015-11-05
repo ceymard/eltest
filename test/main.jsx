@@ -93,14 +93,18 @@ function MyApp(attrs, children) {
 
   return <div $$={ctrl(app)}>
     <Toolbar>
-      <Button icon='menu'/>
+      <Button icon='menu' click={() => alert('clicked')}/>
       <h3>Examples</h3>
     </Toolbar>
     <Content>
       <h2>Form example</h2>
       <Button click={(ev) => app.test()}>Click me !</Button>
       <Button class='primary' raised click={() => app.testModal()}>Modal Dialog</Button>
-      <Button disabled raised click={() => app.test()}>Disabled</Button>
+      <Button disabled raised click={() => app.txt.set('disabled')}>Disabled</Button>
+
+      <Button raised click={() => app.txt.set('javascript is fun.')} icon='language-javascript'></Button>
+      <Button click={() => app.txt.set('favorite')} icon='favorite'></Button>
+
       <br/>
       <Checkbox model={app.bool} title='Click me'/>
       <Checkbox disabled model={app.bool} title='Click me'/>
