@@ -15,6 +15,7 @@ window.assert = function (b) {
 }
 
 import {o, c, Controller, click, bind, ctrl} from 'carbyne';
+import * as rt from 'carbyne/route';
 import {dialog, Button, Checkbox, Icon, Radio, Toolbar, Input, Content} from 'carbyne-material';
 import 'carbyne-material/typography.styl';
 
@@ -112,7 +113,7 @@ function MyApp(attrs, children) {
       <Radio value='string' model={app.radio} title='Test 1'/>
       <Radio value={() => <a href='https://www.google.com' target='_blank'>google.com</a>} model={app.radio} title='Test Link'/>
       <Radio value={{a: 1, b: 2}} model={app.radio} title='Test Object'/>
-      <Radio value={() => [<a href='https://www.reddit.com' target='_blank'>reddit.com</a>, ' is nice']} model={app.radio} title='Test Array'/>
+      <Radio value={() => <fragment><a href='https://www.reddit.com' target='_blank'>reddit.com</a> is nice</fragment>} model={app.radio} title='Test Array'/>
       <br/>
       {app.radio}
       <br/>
@@ -127,14 +128,14 @@ function MyApp(attrs, children) {
         <It type='text' obs={app.txt}></It>
         <It type='password' obs={app.pass}></It>
         <It type='checkbox' obs={app.bool}></It>
-        <It type='search' obs={app.search}></It>
-        <It type='email' obs={app.email}></It>
-        <It type='number' obs={app.number}></It>
-        <It type='tel' obs={app.tel}></It>
         <It type='radio' obs={app.radio}>
           <label><input type='radio' value='one' $$={bind(app.radio)}/>One</label>
           <label><input type='radio' value='two' $$={bind(app.radio)}/>Two</label>
         </It>
+        <It type='search' obs={app.search}></It>
+        <It type='email' obs={app.email}></It>
+        <It type='number' obs={app.number}></It>
+        <It type='tel' obs={app.tel}></It>
         <It type='color' obs={app.color}></It>
         <It type='range' obs={app.val}></It>
         <It type='date' obs={app.date}></It>
