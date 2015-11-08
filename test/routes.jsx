@@ -5,33 +5,29 @@ export var router = new Router;
 // How do I handle last visited view ?
 router.setDefault('test-input');
 
-router.state('main', {
+router.state('app', {
   url: '/',
   view: MainState
 });
 
-router.state('input', {
+router.state('app.input', {
   url: '/input',
-  parent: 'main',
   // No arguments, only one view, which is the main view.
   view: InputPage
 });
 
-router.state('input.shiny', {
+router.state('app.input.shiny', {
   url: '/shiny',
-  parent: 'main',
   view: Html5InputTest
 });
 
-router.state('input.standard', {
+router.state('app.input.standard', {
   url: '/standard',
-  parent: 'main',
   view: StandardInputTest
 });
 
-router.state('material', {
+router.state('app.material', {
   url: '/material',
-  parent: 'main'
   view: MaterialTest
 });
 
@@ -40,4 +36,11 @@ router.state('material', {
 // });
 
 // Basic view of our application.
-<MyApp/>.mount(document.body);
+<div>
+  <Toolbar>
+    <View name='toolbar' router={router}/>
+  </Toolbar>
+  <Content>
+    <View name='content' router={router}/>
+  </Content>
+</div>.mount(document.body);

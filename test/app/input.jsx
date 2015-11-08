@@ -30,10 +30,9 @@ export function InputPage(state) {
 }
 
 
-export function Html5InputTest(state) {
-  let data = state.data.app;
+export function Html5InputTest(views, data) {
 
-  return <fragment>
+  views.body = <fragment>
       <p>The new input types.</p>
       <It type='search' obs={data.search}></It>
       <It type='email' obs={data.email}></It>
@@ -50,10 +49,9 @@ export function Html5InputTest(state) {
 }
 
 
-export function StandardInputTest(state) {
-  let data = state.data.app;
+export function StandardInputTest(views, data) {
 
-  return <fragment>
+  views.body = <fragment>
       <p>The regular input types</p>
       <It type='text' obs={data.txt}></It>
       <It type='password' obs={data.pass}></It>
