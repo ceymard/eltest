@@ -15,7 +15,7 @@ window.assert = function (b) {
 }
 
 import {o, c, Controller, click, bind, ctrl} from 'carbyne';
-import * as rt from 'carbyne/route';
+// import * as rt from 'carbyne/route';
 import {dialog, Button, Checkbox, Icon, Radio, Toolbar, Input, Content} from 'carbyne-material';
 import 'carbyne-material/typography.styl';
 

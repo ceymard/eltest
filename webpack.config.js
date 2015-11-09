@@ -5,7 +5,7 @@ var path = require('path');
 module.exports = {
   devtool: 'source-map',
   cache: false,
-  entry: "./test/main.jsx",
+  entry: "./test/routes.jsx",
   output: {
     path: "./test",
     publicPath: "/",

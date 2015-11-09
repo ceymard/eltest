@@ -1,4 +1,6 @@
 
+import {o, c, bind, click, Fragment} from 'carbyne';
+
 /**
  * Input Test shortcut
  */
@@ -20,19 +22,18 @@ function It(attrs, children) {
 }
 
 
-export function InputPage(state) {
-  return <fragment>
-    <Toolbar>
+export function InputState(views, params, data) {
+
+  views.toolbar = <Fragment>
       <h3>Input Page</h3>
-    </Toolbar>,
-    <View/>
-  </fragment>;
+    </Fragment>;
+
 }
 
 
-export function Html5InputTest(views, data) {
+export function Html5InputState(views, params, data) {
 
-  views.body = <fragment>
+  views.content = <Fragment>
       <p>The new input types.</p>
       <It type='search' obs={data.search}></It>
       <It type='email' obs={data.email}></It>
@@ -45,13 +46,13 @@ export function Html5InputTest(views, data) {
       <It type='week' obs={data.week}></It>
       <It type='time' obs={data.time}></It>
       <It type='datetime-local' obs={data.datetime_local}></It>
-    </fragment>;
+    </Fragment>;
 }
 
 
-export function StandardInputTest(views, data) {
+export function StandardInputState(views, params, data) {
 
-  views.body = <fragment>
+  views.content = <Fragment>
       <p>The regular input types</p>
       <It type='text' obs={data.txt}></It>
       <It type='password' obs={data.pass}></It>
@@ -60,6 +61,6 @@ export function StandardInputTest(views, data) {
         <label><input type='radio' value='one' $$={bind(data.radio)}/>One</label>
         <label><input type='radio' value='two' $$={bind(data.radio)}/>Two</label>
       </It>
-    </fragment>
+    </Fragment>
 
 }
