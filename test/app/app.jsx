@@ -1,5 +1,5 @@
 
-import {o, c} from 'carbyne';
+import {o, c, Fragment} from 'carbyne';
 
 export function MainState(views, params, data) {
 
@@ -22,8 +22,8 @@ export function MainState(views, params, data) {
   data.txt = o('some text');
 
   views.content = <p>There should be some content here and you should not be seeing this.</p>
-  views.toolbar = <fragment>
+  views.toolbar = <Fragment>
       <h3>Main State</h3>
-    </fragment>;
+    </Fragment>;
 
 }

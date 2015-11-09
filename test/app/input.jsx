@@ -1,5 +1,5 @@
 
-import {o, c, bind, click, Fragment} from 'carbyne';
+import {o, c, bind, click, Fragment, View} from 'carbyne';
 
 /**
  * Input Test shortcut
@@ -26,12 +26,15 @@ export function InputState(views, params, data) {
 
   views.toolbar = <Fragment>
       <h3>Input Page</h3>
+      <View name='toolbar.subtitle'/>
     </Fragment>;
 
 }
 
 
 export function Html5InputState(views, params, data) {
+
+  views['toolbar.subtitle'] = <Fragment>&nbsp;&ndash; HTML5 Inputs</Fragment>;
 
   views.content = <Fragment>
       <p>The new input types.</p>
@@ -51,6 +54,8 @@ export function Html5InputState(views, params, data) {
 
 
 export function StandardInputState(views, params, data) {
+
+  views['toolbar.subtitle'] = <Fragment>&nbsp;&ndash; Regular Inputs</Fragment>;
 
   views.content = <Fragment>
       <p>The regular input types</p>
