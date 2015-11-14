@@ -16,11 +16,11 @@ export function MaterialState(views, params, data) {
     });
   };
 
-  views.toolbar = <Fragment>
+  views.toolbar = () => <Fragment>
     <h3>Material</h3>
     </Fragment>;
 
-  views.content = <Fragment>
+  views.content = () => <Fragment>
     <h2>Form example</h2>
     <Button click={(ev) => data.txt.set('disabled')}>Click me !</Button>
     <Button class='primary' raised click={() => test_modal()}>Modal Dialog</Button>

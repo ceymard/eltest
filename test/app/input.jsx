@@ -24,7 +24,7 @@ function It(attrs, children) {
 
 export function InputState(views, params, data) {
 
-  views.toolbar = <Fragment>
+  views.toolbar = () => <Fragment>
       <h3>Input Page</h3>
       <View name='toolbar_subtitle'/>
     </Fragment>;
@@ -34,9 +34,9 @@ export function InputState(views, params, data) {
 
 export function Html5InputState(views, params, data) {
 
-  views.toolbar_subtitle = <Fragment>&nbsp;&ndash; HTML5 Inputs</Fragment>;
+  views.toolbar_subtitle = () => <Fragment>&nbsp;&ndash; HTML5 Inputs</Fragment>;
 
-  views.content = <Fragment>
+  views.content = () => <Fragment>
       <p>The new input types.</p>
       <It type='search' obs={data.search}></It>
       <It type='email' obs={data.email}></It>
@@ -55,7 +55,7 @@ export function Html5InputState(views, params, data) {
 
 export function StandardInputState(views, params, data) {
 
-  views.content = <Fragment>
+  views.content = () => <Fragment>
       <p>The regular input types</p>
       <It type='text' obs={data.txt}></It>
       <It type='password' obs={data.pass}></It>
