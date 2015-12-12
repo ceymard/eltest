@@ -21,8 +21,8 @@ export function MainState(views, params, data) {
   data.array = o(['a', 'b', 'c']);
   data.txt = o('some text');
 
-  views.content = <p>There should be some content here and you should not be seeing this.</p>
-  views.toolbar = <Fragment>
+  views.content = () => <p>There should be some content here and you should not be seeing this.</p>
+  views.toolbar = () => <Fragment>
       <h3>Main State</h3>
     </Fragment>;
 

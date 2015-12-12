@@ -22,7 +22,7 @@ export function MaterialState(views, params, data) {
 
   views.content = () => <Fragment>
     <h2>Form example</h2>
-    <Button click={(ev) => data.txt.set('disabled')}>Click me !</Button>
+    <Button click={(ev) => data.txt.set('clicked...')}>Click me !</Button>
     <Button class='primary' raised click={() => test_modal()}>Modal Dialog</Button>
     <Button disabled raised click={() => data.txt.set('disabled')}>Disabled</Button>
 
