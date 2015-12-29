@@ -1,4 +1,6 @@
-import {c, Router, View} from 'carbyne';
+import {c} from 'carbyne';
+import {Router, View} from 'carbyne-router';
+
 import {dialog, Button, Checkbox, Icon, Radio, Toolbar, Input, Content} from 'carbyne-material';
 
 import {MainState} from './app/app';

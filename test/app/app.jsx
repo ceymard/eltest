@@ -1,7 +1,9 @@
 
 import {o, c, Fragment} from 'carbyne';
 
-export function MainState(views, params, data) {
+export function MainState() {
+
+  const data = this.data;
 
   data.pass = o('hunter2');
   data.obj = o({a: 1, b: 2});
@@ -21,8 +23,8 @@ export function MainState(views, params, data) {
   data.array = o(['a', 'b', 'c']);
   data.txt = o('some text');
 
-  views.content = () => <p>There should be some content here and you should not be seeing this.</p>
-  views.toolbar = () => <Fragment>
+  this.views.content = () => <p>There should be some content here and you should not be seeing this.</p>
+  this.views.toolbar = () => <Fragment>
       <h3>Main State</h3>
     </Fragment>;
 

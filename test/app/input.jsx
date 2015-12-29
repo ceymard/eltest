@@ -1,5 +1,6 @@
 
-import {o, c, bind, click, Fragment, View} from 'carbyne';
+import {o, c, bind, click, Fragment} from 'carbyne';
+import {View} from 'carbyne-router';
 
 /**
  * Input Test shortcut
@@ -22,9 +23,9 @@ function It(attrs, children) {
 }
 
 
-export function InputState(views, params, data) {
+export function InputState() {
 
-  views.toolbar = () => <Fragment>
+  this.views.toolbar = () => <Fragment>
       <h3>Input Page</h3>
       <View name='toolbar_subtitle'/>
     </Fragment>;
@@ -32,11 +33,13 @@ export function InputState(views, params, data) {
 }
 
 
-export function Html5InputState(views, params, data) {
+export function Html5InputState() {
 
-  views.toolbar_subtitle = () => <Fragment>&nbsp;&ndash; HTML5 Inputs</Fragment>;
+  const data = this.data;
 
-  views.content = () => <Fragment>
+  this.views.toolbar_subtitle = () => <Fragment>&nbsp;&ndash; HTML5 Inputs</Fragment>;
+
+  this.views.content = () => <Fragment>
       <p>The new input types.</p>
       <It type='search' obs={data.search}></It>
       <It type='email' obs={data.email}></It>
@@ -53,9 +56,11 @@ export function Html5InputState(views, params, data) {
 }
 
 
-export function StandardInputState(views, params, data) {
+export function StandardInputState() {
 
-  views.content = () => <Fragment>
+  const data = this.data;
+
+  this.views.content = () => <Fragment>
       <p>The regular input types</p>
       <It type='text' obs={data.txt}></It>
       <It type='password' obs={data.pass}></It>
