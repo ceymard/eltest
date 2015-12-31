@@ -27,5 +27,4 @@ export function MainState() {
   this.views.toolbar = () => <Fragment>
       <h3>Main State</h3>
     </Fragment>;
-
 }

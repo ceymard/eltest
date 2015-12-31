@@ -70,5 +70,4 @@ export function StandardInputState() {
         <label><input type='radio' value='two' $$={bind(data.radio)}/>Two</label>
       </It>
     </Fragment>
-
 }

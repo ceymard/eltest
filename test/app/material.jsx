@@ -1,6 +1,6 @@
 
 import {Fragment as F, c} from 'carbyne';
-import {Button as Bu, Radio as Ra, Input as In, Checkbox as Ch, dialog} from 'carbyne-material';
+import {Button as Bu, Radio as Ra, Input as In, Checkbox as Ch, dialog, toast} from 'carbyne-material';
 
 export function MaterialState() {
 
@@ -25,7 +25,7 @@ export function MaterialState() {
 
   views.content = () => <F>
     <h2>Form example</h2>
-    <Bu click={(ev) => data.txt.set('clicked...')}>Click me !</Bu>
+    <Bu click={(ev) => toast.toast('toastin\'')}>Click me !</Bu>
     <Bu class='primary' raised click={() => test_modal()}>Modal Dialog</Bu>
     <Bu disabled raised click={() => data.txt.set('disabled')}>Disabled</Bu>
 
