@@ -14,6 +14,7 @@
     "babel": "^5.8.29",
     "css-loader": "^0.21.0",
     "extract-text-webpack-plugin": "^0.8.2",
+    "fastclick": "^1.0.6",
     "regenerator": "^0.8.41",
     "style-loader": "^0.13.0",
     "stylus-loader": "^1.4.0"

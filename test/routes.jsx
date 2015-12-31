@@ -1,3 +1,6 @@
+import * as fs from 'fastclick';
+document.addEventListener('DOMContentLoaded', ev => fs.attach(document.body));
+
 import {c} from 'carbyne';
 import {Router, View} from 'carbyne-router';
 
@@ -6,6 +9,7 @@ import {dialog, Button, Checkbox, Icon, Radio, Toolbar, Input, Content} from 'ca
 import {MainState} from './app/app';
 import {InputState, Html5InputState, StandardInputState} from './app/input';
 import {MaterialState} from './app/material';
+
 
 export var router = new Router;
 
