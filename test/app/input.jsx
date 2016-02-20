@@ -25,7 +25,7 @@ function It(attrs, children) {
 
 export function InputState() {
 
-  this.views.toolbar = () => <Fragment>
+  this.toolbar = () => <Fragment>
       <h3>Input Page</h3>
       <View name='toolbar_subtitle'/>
     </Fragment>;
@@ -35,39 +35,35 @@ export function InputState() {
 
 export function Html5InputState() {
 
-  const data = this.data;
+  this.toolbar_subtitle = () => <Fragment>&nbsp;&ndash; HTML5 Inputs</Fragment>;
 
-  this.views.toolbar_subtitle = () => <Fragment>&nbsp;&ndash; HTML5 Inputs</Fragment>;
-
-  this.views.content = () => <Fragment>
+  this.content = () => <Fragment>
       <p>The new input types.</p>
-      <It type='search' obs={data.search}></It>
-      <It type='email' obs={data.email}></It>
-      <It type='number' obs={data.number}></It>
-      <It type='tel' obs={data.tel}></It>
-      <It type='color' obs={data.color}></It>
-      <It type='range' obs={data.val}></It>
-      <It type='date' obs={data.date}></It>
-      <It type='month' obs={data.month}></It>
-      <It type='week' obs={data.week}></It>
-      <It type='time' obs={data.time}></It>
-      <It type='datetime-local' obs={data.datetime_local}></It>
+      <It type='search' obs={this.search}></It>
+      <It type='email' obs={this.email}></It>
+      <It type='number' obs={this.number}></It>
+      <It type='tel' obs={this.tel}></It>
+      <It type='color' obs={this.color}></It>
+      <It type='range' obs={this.val}></It>
+      <It type='date' obs={this.date}></It>
+      <It type='month' obs={this.month}></It>
+      <It type='week' obs={this.week}></It>
+      <It type='time' obs={this.time}></It>
+      <It type='datetime-local' obs={this.datetime_local}></It>
     </Fragment>;
 }
 
 
 export function StandardInputState() {
 
-  const data = this.data;
-
-  this.views.content = () => <Fragment>
+  this.content = () => <Fragment>
       <p>The regular input types</p>
-      <It type='text' obs={data.txt}></It>
-      <It type='password' obs={data.pass}></It>
-      <It type='checkbox' obs={data.bool}></It>
-      <It type='radio' obs={data.radio}>
-        <label><input type='radio' value='one' $$={bind(data.radio)}/>One</label>
-        <label><input type='radio' value='two' $$={bind(data.radio)}/>Two</label>
+      <It type='text' obs={this.txt}></It>
+      <It type='password' obs={this.pass}></It>
+      <It type='checkbox' obs={this.bool}></It>
+      <It type='radio' obs={this.radio}>
+        <label><input type='radio' value='one' $$={bind(this.radio)}/>One</label>
+        <label><input type='radio' value='two' $$={bind(this.radio)}/>Two</label>
       </It>
     </Fragment>
 }

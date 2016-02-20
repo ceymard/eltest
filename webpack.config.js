@@ -4,7 +4,7 @@ var path = require('path');
 
 module.exports = {
   devtool: 'source-map',
-  cache: false,
+  cache: true,
   entry: "./test/routes.jsx",
   output: {
     path: "./test",
@@ -25,8 +25,8 @@ module.exports = {
       {test: /\.css$/, loader: ExtractTextPlugin.extract('css')},
       {test: /\.styl$/, loader: ExtractTextPlugin.extract('css!stylus')},
       {test: /\.jsx$/, exclude: /node_modules/, loader: 'babel', query: {
-        stage: 0,
-        jsxPragma: 'c'
+      	presets: ['react', 'es2015'].map(e => `${__dirname}/node_modules/babel-preset-${e}`),
+      	plugins: [ ['transform-react-jsx', {pragma: 'c'}] ]
       }},
     ]
   },
