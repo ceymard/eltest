@@ -25,7 +25,7 @@ module.exports = {
       {test: /\.css$/, loader: ExtractTextPlugin.extract('css')},
       {test: /\.styl$/, loader: ExtractTextPlugin.extract('css!stylus')},
       {test: /\.jsx$/, exclude: /node_modules/, loader: 'babel', query: {
-      	presets: ['react', 'es2015'].map(e => `${__dirname}/node_modules/babel-preset-${e}`),
+      	presets: ['react', 'es2015-loose'].map(e => `${__dirname}/node_modules/babel-preset-${e}`),
       	plugins: [ ['transform-react-jsx', {pragma: 'c'}] ]
       }},
     ]

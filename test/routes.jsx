@@ -1,23 +1,26 @@
+import 'babel-polyfill'
 import * as fs from 'fastclick';
 document.addEventListener('DOMContentLoaded', ev => fs.attach(document.body));
 
-import {c} from 'carbyne';
-import {Router, View} from 'carbyne-router';
+import {c} from 'carbyne'
+import {Router, View} from 'carbyne-router'
 
-import {dialog, Button, Checkbox, Icon, Radio, Toolbar, Input, Content} from 'carbyne-material';
+import {dialog, Button, Checkbox, Icon, Radio, Toolbar, Input, Content} from 'carbyne-material'
 
-import {MainState} from './app/app';
-import {InputState, Html5InputState, StandardInputState} from './app/input';
-import {MaterialState} from './app/material';
+import {MainState} from './app/app'
+import {InputState, Html5InputState, StandardInputState} from './app/input'
+import {MaterialState} from './app/material'
+import {RepeaterState} from './app/repeat_test'
 
 
-export var router = new Router;
+export var router = new Router
 
-router.state('app', '', MainState);
-router.state('app.input', '/input', InputState);
-router.state('app.input.shiny', '/shiny', Html5InputState);
-router.state('app.input.standard', '/standard', StandardInputState);
-router.state('app.material', '/material', MaterialState);
+router.state('app', '', MainState)
+router.state('app.input', '/input', InputState)
+router.state('app.input.shiny', '/shiny', Html5InputState)
+router.state('app.input.standard', '/standard', StandardInputState)
+router.state('app.material', '/material', MaterialState)
+router.state('app.repeater', '/repeater', RepeaterState)
 
 /*
   We will do that once we have the slide menu
@@ -38,7 +41,8 @@ function Link(attrs, children) {
 */
 
 // Basic view of our application.
-<div>
+
+var div = <div>
   <Toolbar>
     <Button icon='menu' click={() => alert('clicked')}/>
     <View name='toolbar' router={router}/>
@@ -47,10 +51,13 @@ function Link(attrs, children) {
     <a $$={router.href('app.input.standard')}>Standard</a>
     <a $$={router.href('app.input.shiny')}>Html5</a>
     <a $$={router.href('app.material')}>Material</a>
+    <a $$={router.href('app.repeater')}>Repeater</a>
     <View name='content' router={router}/>
   </Content>
-</div>.mount(document.body);
+</div>
 
-router.linkWithLocation();
+div.mount(document.body)
+
+router.linkWithLocation()
 // router.default('app.input.standard');
 // router.go('app.input.standard');
