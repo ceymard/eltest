@@ -1,11 +1,11 @@
 
-import {Atom, ctrl, Controller, o, c, identity} from 'carbyne'
+import {VirtualAtom, ctrl, Controller, o, c, identity} from 'carbyne'
 
 
-export class Repeater extends Atom {
+export class Repeater extends VirtualAtom {
 
 	constructor(obs, fn) {
-		super(null) // Virtual Atom
+		super() // Virtual Atom
 		this._current_length = 0
 		this._obs = obs
 		this._fn = fn
@@ -50,15 +50,6 @@ export class Repeater extends Atom {
 
 		this._current_length = arr.length
 	}
-
-}
-
-
-/**
- * An Atom that implements virtual scrolling that only creates
- * elements while we scroll instead of rendering them all.
- */
-export class VirtualRepeat extends Atom {
 
 }
 
@@ -123,7 +114,7 @@ export class Appender extends Controller {
 		while (e.scrollHeight - (e.clientHeight + e.scrollTop) < 50) {
 			var next = this.provider()
 			if (next === null) break
-			this.o_appended.inc(1)
+			this.o_appended.add(1)
 			this.atom.append(next)
 		}
 	}

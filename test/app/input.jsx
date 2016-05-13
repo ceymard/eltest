@@ -39,17 +39,17 @@ export function Html5InputState() {
 
   this.content = () => <Fragment>
       <p>The new input types.</p>
-      <It type='search' obs={this.search}></It>
-      <It type='email' obs={this.email}></It>
-      <It type='number' obs={this.number}></It>
-      <It type='tel' obs={this.tel}></It>
-      <It type='color' obs={this.color}></It>
-      <It type='range' obs={this.val}></It>
-      <It type='date' obs={this.date}></It>
-      <It type='month' obs={this.month}></It>
-      <It type='week' obs={this.week}></It>
-      <It type='time' obs={this.time}></It>
-      <It type='datetime-local' obs={this.datetime_local}></It>
+      <It type='search' obs={this.ᐅsearch}></It>
+      <It type='email' obs={this.ᐅemail}></It>
+      <It type='number' obs={this.ᐅnumber}></It>
+      <It type='tel' obs={this.ᐅtel}></It>
+      <It type='color' obs={this.ᐅcolor}></It>
+      <It type='range' obs={this.ᐅval}></It>
+      <It type='date' obs={this.ᐅdate}></It>
+      <It type='month' obs={this.ᐅmonth}></It>
+      <It type='week' obs={this.ᐅweek}></It>
+      <It type='time' obs={this.ᐅtime}></It>
+      <It type='datetime-local' obs={this.ᐅdatetime_local}></It>
     </Fragment>;
 }
 
@@ -58,12 +58,12 @@ export function StandardInputState() {
 
   this.content = () => <Fragment>
       <p>The regular input types</p>
-      <It type='text' obs={this.txt}></It>
-      <It type='password' obs={this.pass}></It>
-      <It type='checkbox' obs={this.bool}></It>
-      <It type='radio' obs={this.radio}>
-        <label><input type='radio' value='one' $$={bind(this.radio)}/>One</label>
-        <label><input type='radio' value='two' $$={bind(this.radio)}/>Two</label>
+      <It type='text' obs={this.ᐅtxt}></It>
+      <It type='password' obs={this.ᐅpass}></It>
+      <It type='checkbox' obs={this.ᐅbool}></It>
+      <It type='radio' obs={this.ᐅradio}>
+        <label><input type='radio' value='one' $$={bind(this.ᐅradio)}/>One</label>
+        <label><input type='radio' value='two' $$={bind(this.ᐅradio)}/>Two</label>
       </It>
     </Fragment>
 }

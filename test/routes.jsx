@@ -44,7 +44,7 @@ function Link(attrs, children) {
 
 var div = <div>
   <Toolbar>
-    <Button icon='menu' click={() => alert('clicked')}/>
+    <Button icon='menu'/>
     <View name='toolbar' router={router}/>
   </Toolbar>
   <Content>
