@@ -1,6 +1,8 @@
 
 import {Fragment as F, c, If, Then, Else, Match, Case} from 'carbyne';
-import {Button as Bu, Radio as Ra, Input as In, Checkbox as Ch, dialog, toast} from 'carbyne-material';
+import {Button as Bu, Radio as Ra, Input as In, Checkbox as Ch, dialog, toast, Tab, TabContainer, Row} from 'carbyne-material';
+
+import {Card, Content as CardContent} from 'carbyne-material/card'
 
 export function MaterialState() {
 
@@ -52,6 +54,21 @@ export function MaterialState() {
       Case('string', v => <p>Test 1 is go</p>),
       Case('one', v => <p>One is go</p>)
     )}
+
+    <TabContainer>
+      <Tab title='hello' render={e => 1}/>
+      <Tab title='you' render={e => 2}/>
+    </TabContainer>
+
+    <Card style='width: 400px;'>
+      <CardContent>
+        <p>Hello</p>
+      </CardContent>
+      <Row>
+        <Bu>Action 1</Bu>
+        <Bu>Action 2</Bu>
+      </Row>
+    </Card>
   </F>;
 
 }
