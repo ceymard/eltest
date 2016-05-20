@@ -2,3 +2,6 @@ node_modules
 build.*
 style.css*
 .*
+*.map
+*.d.ts
+*.js

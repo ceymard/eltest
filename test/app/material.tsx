@@ -1,8 +1,6 @@
 
 import {Fragment as F, c, If, Then, Else, Match, Case} from 'carbyne';
-import {Button as Bu, Radio as Ra, Input as In, Checkbox as Ch, dialog, toast, Tab, TabContainer, Row} from 'carbyne-material';
-
-import {Card, Content as CardContent} from 'carbyne-material/card'
+import {Button as Bu, Radio as Ra, Input as In, Checkbox as Ch, dialog, toast, Tab, TabContainer, Row, Card, Content as CardContent} from 'carbyne-material';
 
 export function MaterialState() {
 
@@ -41,7 +39,9 @@ export function MaterialState() {
     <Ra value={() => <F><a href='https://www.reddit.com' target='_blank'>reddit.com</a> is nice</F>} model={this.ᐅradio} title='Test Array'/>
     <br/>
     <In model={this.ᐅtxt}/>
-    <In model={this.ᐅtxt.transform({get : v => v.toUpperCase(), set: v => v.toLowerCase()})}/>
+    <In model={this.ᐅtxt.tf({get : v => v.toUpperCase(), set: v => v.toLowerCase()})}/>
+
+    <br/>
 
     {If(this.ᐅradio.eq('string'),
       Then(v =>

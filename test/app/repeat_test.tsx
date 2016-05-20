@@ -1,12 +1,12 @@
 
-import {c, o, ctrl, Controller, Repeat} from 'carbyne'
+import {c, o, ctrl, Controller, Repeat, ArrayObservable} from 'carbyne'
 import {Button} from 'carbyne-material'
 import {InfiniteScroll} from './repeat'
 
 
 export function RepeaterState() {
 
-	var ᐅarray = o(['haha', 'hihi', 'hoho'])
+	var ᐅarray = new ArrayObservable(['haha', 'hihi', 'hoho'])
 
 	this.toolbar = () => <h3>Repeater</h3>
 
@@ -16,7 +16,7 @@ export function RepeaterState() {
 			<Button click={ev => ᐅarray.push('pouet')}>Add</Button>
 			<Button click={ev => ᐅarray.pop()}>Remove</Button>
 			<Button click={ev => {
-				ᐅarray.set(4, 'hahahah')
+				ᐅarray.setp(4, 'hahahah')
 			}}>Test</Button>
 		</div>
 		{Repeat(ᐅarray, (ᐅct, idx) => <p>{ᐅct}</p>)}
