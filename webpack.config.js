@@ -23,8 +23,7 @@ module.exports = {
     ],
     loaders: [
       {test: /\.css$/, loader: ExtractTextPlugin.extract('css')},
-      {test: /\.styl$/, loader: ExtractTextPlugin.extract('css!stylus')},
-      {test: /\.jsx$/, exclude: /node_modules/, loader: 'babel'},
+      {test: /\.styl$/, loader: ExtractTextPlugin.extract('css!stylus')}
     ]
   },
   plugins: [

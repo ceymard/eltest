@@ -1,5 +1,5 @@
 
-import 'babel-polyfill'
+// import 'babel-polyfill'
 import * as fs from 'fastclick';
 document.addEventListener('DOMContentLoaded', ev => fs.attach(document.body));
 
@@ -54,7 +54,7 @@ var div = <div>
     <a $$={router.href('app.repeater')}>Repeater</a>
     <View name='content' router={router}/>
   </Content>
-</div> as BaseAtom
+</div>
 
 div.mount(document.body)
 
