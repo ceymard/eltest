@@ -3,7 +3,6 @@
         "target": "es5",
         "module": "commonjs",
         "moduleResolution": "node",
-        "declaration": true,
         "sourceMap": true,
         "noImplicitAny": false,
         "jsx": "react",
@@ -18,6 +17,7 @@
     "files": [
         "./src/routes.tsx",
         "./typings/carbyne-jsx.d.ts",
+        "./typings/fastclick/fastclick.d.ts",
         "./typings/es6-promise/es6-promise.d.ts"
     ]
 

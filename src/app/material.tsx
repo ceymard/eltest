@@ -43,7 +43,7 @@ export class MaterialState extends MainState {
       <Ra value={() => <F><a href='https://www.reddit.com' target='_blank'>reddit.com</a> is nice</F>} model={this.ᐅradio} title='Test Array'/>
       <br/>
       <In model={this.ᐅtxt}/>
-      <In model={this.ᐅtxt.tf({get : v => v.toUpperCase(), set: v => v.toLowerCase()})}/>
+      <In model={this.ᐅtxt.tf<string>({get : v => v.toUpperCase(), set: v => v.toLowerCase()})}/>
 
       <br/>
 

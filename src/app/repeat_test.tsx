@@ -22,7 +22,7 @@ export class RepeaterState extends MainState {
 				<Button click={ev => this.ᐅarray.push('pouet') }>Add</Button>
 				<Button click={ev => this.ᐅarray.pop() }>Remove</Button>
 				<Button click={ev => {
-					this.ᐅarray.setp(4, 'hahahah')
+					this.ᐅarray.setp('4', 'hahahah')
 				} }>Test</Button>
 			</div>
 			{Repeat(this.ᐅarray, (ᐅct, idx) => <p>{ᐅct}</p>) }

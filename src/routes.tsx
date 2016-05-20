@@ -13,8 +13,7 @@ import {InputState, Html5InputState, StandardInputState} from './app/input'
 import {MaterialState} from './app/material'
 import {RepeaterState} from './app/repeat_test'
 
-export var router = new Router
-
+var router = new Router
 
 router.state('app', '', MainState)
 router.state('app.input', '/input', InputState)
@@ -55,7 +54,7 @@ var div = <div>
     <a $$={router.href('app.repeater')}>Repeater</a>
     <View name='content' router={router}/>
   </Content>
-</div>
+</div> as BaseAtom
 
 div.mount(document.body)
 
