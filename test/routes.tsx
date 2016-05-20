@@ -1,3 +1,4 @@
+
 import 'babel-polyfill'
 import * as fs from 'fastclick';
 document.addEventListener('DOMContentLoaded', ev => fs.attach(document.body));
@@ -13,6 +14,7 @@ import {MaterialState} from './app/material'
 import {RepeaterState} from './app/repeat_test'
 
 export var router = new Router
+
 
 router.state('app', '', MainState)
 router.state('app.input', '/input', InputState)

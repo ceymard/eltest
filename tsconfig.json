@@ -10,12 +10,13 @@
         "reactNamespace": "c",
         "noLib": false
     },
+    "exclude": ["node_modules"],
     "filesGlob": [
-        "./**/*.ts",
-        "!./node_modules/**/*.ts"
+        "./**/*.ts"
     ],
     "files": [
         "./test/routes.tsx",
+	"./typings/carbyne-jsx.d.ts",
         "./typings/es6-promise/es6-promise.d.ts"
     ]
 
