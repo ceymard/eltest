@@ -1,6 +1,7 @@
 
 import {o, c, bind, click, Fragment} from 'carbyne';
 import {View} from 'carbyne-router';
+import {MainState} from './app'
 
 /**
  * Input Test shortcut
@@ -23,21 +24,24 @@ function It(attrs, children) {
 }
 
 
-export function InputState() {
+export class InputState extends MainState {
 
-  this.toolbar = () => <Fragment>
+  toolbar() {
+    return <Fragment>
       <h3>Input Page</h3>
       <View name='toolbar_subtitle'/>
-    </Fragment>;
+    </Fragment>
+  }
 
 }
 
 
-export function Html5InputState() {
+export class Html5InputState extends InputState {
 
-  this.toolbar_subtitle = () => <Fragment>&nbsp;&ndash; HTML5 Inputs</Fragment>;
+  toolbar_subtitle() { return <Fragment>&nbsp; &ndash; HTML5 Inputs</Fragment> }
 
-  this.content = () => <Fragment>
+  content() {
+    return <Fragment>
       <p>The new input types.</p>
       <It type='search' obs={this.ᐅsearch}></It>
       <It type='email' obs={this.ᐅemail}></It>
@@ -50,20 +54,24 @@ export function Html5InputState() {
       <It type='week' obs={this.ᐅweek}></It>
       <It type='time' obs={this.ᐅtime}></It>
       <It type='datetime-local' obs={this.ᐅdatetime_local}></It>
-    </Fragment>;
+    </Fragment>
+  }
 }
 
 
-export function StandardInputState() {
+export class StandardInputState extends InputState {
 
-  this.content = () => <Fragment>
+  content() {
+    return <Fragment>
       <p>The regular input types</p>
       <It type='text' obs={this.ᐅtxt}></It>
       <It type='password' obs={this.ᐅpass}></It>
       <It type='checkbox' obs={this.ᐅbool}></It>
       <It type='radio' obs={this.ᐅradio}>
-        <label><input type='radio' value='one' $$={bind(this.ᐅradio)}/>One</label>
-        <label><input type='radio' value='two' $$={bind(this.ᐅradio)}/>Two</label>
+        <label><input type='radio' value='one' $$={bind(this.ᐅradio) }/>One</label>
+        <label><input type='radio' value='two' $$={bind(this.ᐅradio) }/>Two</label>
       </It>
     </Fragment>
+  }
 }
+
