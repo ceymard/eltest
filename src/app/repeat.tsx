@@ -53,7 +53,7 @@ export function InfiniteScroll(a) {
 	// let isc = new InfiniteScrollController(a.provider)
 	let isc = new Appender(() => <p style='padding: 5px 10px'><b>John Smith</b><br/>15SCA - {Math.random()}</p>)
 
-	let cont = <div $$={ctrl(isc)} style='margin: 1em; border: 1px solid rgba(0, 0, 0, 0.14); height: 300px; overflow-y: scroll; -webkit-overflow-scrolling: touch'>
+	let cont = <div $$={isc} style='margin: 1em; border: 1px solid rgba(0, 0, 0, 0.14); height: 300px; overflow-y: scroll; -webkit-overflow-scrolling: touch'>
 
 	</div>
 	// let cont = <div $$={ctrl(isc)} style='margin: 1em; border: 1px solid rgba(0, 0, 0, 0.14); height: 300px; overflow-y: scroll; -webkit-overflow-scrolling: touch'>

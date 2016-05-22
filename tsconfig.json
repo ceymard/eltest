@@ -18,7 +18,7 @@
         "./src/routes.tsx",
         "./typings/carbyne-jsx.d.ts",
         "./typings/fastclick/fastclick.d.ts",
-        "./typings/es6-promise/es6-promise.d.ts"
+        "./typings/globals/es6-promise/index.d.ts"
     ]
 
 }

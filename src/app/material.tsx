@@ -46,6 +46,8 @@ export class MaterialState extends MainState {
       <In model={this.ᐅtxt.tf<string>({get : v => v.toUpperCase(), set: v => v.toLowerCase()})}/>
 
       <br/>
+      {this.ᐅradio}
+      <br/>
 
       {If(this.ᐅradio.eq('string'),
         Then(v =>
