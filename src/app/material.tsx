@@ -1,7 +1,9 @@
 
-import {Fragment as F, c, If, Then, Else, Match, Case} from 'carbyne';
+import {Fragment as F, c, If, Then, Else, Match, Case, Atom} from 'carbyne';
 import {Button as Bu, Radio as Ra, Input as In, Checkbox as Ch, dialog, toast, Tab, TabContainer, Row, Card, Content as CardContent} from 'carbyne-material';
 import {MainState} from './app'
+
+// import {animate} from './animate'
 
 const test_modal = () => {
   dialog.modal({
@@ -14,6 +16,7 @@ const test_modal = () => {
     console.log(res);
   });
 };
+
 
 export class MaterialState extends MainState {
 
@@ -31,7 +34,9 @@ export class MaterialState extends MainState {
       <Bu disabled raised click={() => this.ᐅtxt.set('disabled')}>Disabled</Bu>
 
       <Bu raised click={() => this.ᐅtxt.set('javascript is fun.')} icon='language-javascript'></Bu>
-      <Bu click={() => this.ᐅtxt.set('favorite')} icon='favorite'></Bu>
+      <Bu click={(ev, atom) => {
+        this.ᐅtxt.set('favorite')
+      }} icon='favorite'></Bu>
 
       <br/>
       <Ch model={this.ᐅbool} title='Click me'/>
@@ -57,8 +62,8 @@ export class MaterialState extends MainState {
       )}
 
       {Match(this.ᐅradio,
-        Case<string>('string', v => <p>Test 1 is go</p>),
-        Case<string>('one', v => <p>One is go</p>)
+        Case('string', v => <p>Test 1 is go</p>),
+        Case('one', v => <p>One is go</p>)
       )}
 
       <TabContainer>

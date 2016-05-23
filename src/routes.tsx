@@ -7,6 +7,7 @@ import {c} from 'carbyne'
 import {Router, View} from 'carbyne-router'
 
 import {dialog, Button, Checkbox, Icon, Radio, Toolbar, Input, Content} from 'carbyne-material'
+import {Nav, NavBody as Body, NavDivider as Divider, NavItem as I} from 'carbyne-material'
 
 import {MainState} from './app/app'
 import {InputState, Html5InputState, StandardInputState} from './app/input'
@@ -39,19 +40,51 @@ function Link(attrs, children) {
 </SlideMenu>
 
 */
+export function dialog_menu() {
+
+  var nav = <Nav router={router}>
+    <div class='menu-header'>
+      <div class='menu-line'>
+        <img src='/logo.png' width='64' height='64'/>
+        <div class='menu-grow'/>
+        <Button icon='power' click={function(e, atom) {
+          atom.emit('nav-go', 'app.login')
+        } }/>
+      </div>
+      <div class='menu-names'>
+        <div class='name'>Jambon the man</div>
+        <div>Secteur 405</div>
+      </div>
+    </div>
+    <Body>
+      <I icon='format-list-bulleted' state='app.input.standard'>
+        Inputs Standard
+      </I>
+      <I icon='pin' state='app.input.shiny'>
+        Inputs HTML5
+      </I>
+      <I icon='border-all' state='app.material'>
+        Material
+      </I>
+      <I icon='border-all' state='app.repeater'>
+        Repeaters
+      </I>
+      <Divider/>
+      <div class='menu-afterword'>Salesway-Engagement® Version 0.0.1</div>
+    </Body>
+  </Nav>
+
+  nav.mount(document.body)
+}
 
 // Basic view of our application.
 
 var div = <div>
   <Toolbar>
-    <Button icon='menu'/>
+    <Button icon='menu' click={ev => dialog_menu()}/>
     <View name='toolbar' router={router}/>
   </Toolbar>
   <Content>
-    <a $$={router.href('app.input.standard')}>Standard</a>
-    <a $$={router.href('app.input.shiny')}>Html5</a>
-    <a $$={router.href('app.material')}>Material</a>
-    <a $$={router.href('app.repeater')}>Repeater</a>
     <View name='content' router={router}/>
   </Content>
 </div>
