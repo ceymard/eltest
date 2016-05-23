@@ -3,7 +3,7 @@
 import * as fs from 'fastclick';
 document.addEventListener('DOMContentLoaded', ev => fs.attach(document.body));
 
-import {c, BaseAtom} from 'carbyne'
+import {c} from 'carbyne'
 import {Router, View} from 'carbyne-router'
 
 import {dialog, Button, Checkbox, Icon, Radio, Toolbar, Input, Content} from 'carbyne-material'

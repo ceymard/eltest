@@ -57,8 +57,8 @@ export class MaterialState extends MainState {
       )}
 
       {Match(this.ᐅradio,
-        Case('string', v => <p>Test 1 is go</p>),
-        Case('one', v => <p>One is go</p>)
+        Case<string>('string', v => <p>Test 1 is go</p>),
+        Case<string>('one', v => <p>One is go</p>)
       )}
 
       <TabContainer>

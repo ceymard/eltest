@@ -1,5 +1,5 @@
 
-import {c, o, ctrl, Controller, Repeat, ArrayObservable} from 'carbyne'
+import {c, o, Controller, Repeat, ArrayObservable} from 'carbyne'
 import {Button} from 'carbyne-material'
 import {InfiniteScroll} from './repeat'
 

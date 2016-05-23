@@ -1,5 +1,5 @@
 
-import {VirtualAtom, ctrl, Controller, o, c, identity, ArrayObservable, Observable} from 'carbyne'
+import {VirtualAtom, Controller, o, c, identity, ArrayObservable, Observable} from 'carbyne'
 
 
 export class Appender extends Controller {
