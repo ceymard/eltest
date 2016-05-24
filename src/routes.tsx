@@ -22,6 +22,7 @@ router.state('app.input.shiny', '/shiny', Html5InputState)
 router.state('app.input.standard', '/standard', StandardInputState)
 router.state('app.material', '/material', MaterialState)
 router.state('app.repeater', '/repeater', RepeaterState)
+router.default('app.input.standard');
 
 /*
   We will do that once we have the slide menu
@@ -92,5 +93,4 @@ var div = <div>
 div.mount(document.body)
 
 router.linkWithLocation()
-// router.default('app.input.standard');
 // router.go('app.input.standard');
